@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strait of Malacca — LNCELOT Oracle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root {
+  --bg-0: #06090f;
+  --bg-1: #0a0e1a;
+  --bg-2: #0f1524;
+  --bg-3: #141c30;
+  --line: rgba(93, 211, 255, 0.12);
+  --line-2: rgba(93, 211, 255, 0.25);
+  --cyan: #5dd3ff;
+  --cyan-d: #2ea7d4;
+  --cyan-glow: rgba(93, 211, 255, 0.4);
+  --amber: #f5b961;
+  --amber-d: #d49337;
+  --red: #ff5f6d;
+  --green: #5fffa0;
+  --white: #e8edf5;
+  --mute: #6b7a99;
+  --mute-2: #8b96b3;
+  --vessel-in: #5dd3ff;
+  --vessel-out: #f5b961;
+  --vessel-dark: #ff5f6d;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-0);
+  color: var(--white);
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 13px;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono { font-family: 'JetBrains Mono', monospace; font-feature-settings: 'tnum'; }
+
+/* ============ APP SHELL ============ */
+.app {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 280px 1fr 260px;
+  grid-template-rows: 1fr 100px;
+  gap: 0;
+  background: var(--bg-0);
+}
+
+/* ============ LEFT PANEL ============ */
+.panel-left {
+  grid-row: 1;
+  grid-column: 1;
+  background: var(--bg-1);
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px;
+}
+
+.panel-left::-webkit-scrollbar { width: 4px; }
+.panel-left::-webkit-scrollbar-track { background: transparent; }
+.panel-left::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 2px; }
+
+.brand {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--mute);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.brand-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan-glow);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  color: var(--white);
+}
+.title .small { display: block; font-size: 13px; color: var(--cyan); margin-top: 2px; }
+
+/* tab pills */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+.tab {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--mute-2);
+  cursor: pointer;
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.15s;
+}
+.tab.active {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(93, 211, 255, 0.08);
+}
+.tab:hover:not(.active) { color: var(--white); border-color: var(--line-2); }
+
+/* section card */
+.card {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.card-label {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--mute);
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+}
+.card-toggle {
+  display: flex;
+  gap: 2px;
+}
+.card-toggle .pill {
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  color: var(--mute);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+}
+.card-toggle .pill.on { background: var(--cyan); color: var(--bg-0); border-color: var(--cyan); }
+
+/* event chart sparkline */
+.spark {
+  width: 100%;
+  height: 60px;
+}
+
+.spark-legend {
+  display: flex;
+  gap: 12px;
+  font-size: 9px;
+  color: var(--mute);
+  margin-bottom: 4px;
+  letter-spacing: 0.08em;
+  font-family: 'JetBrains Mono', monospace;
+}
+.spark-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.swatch { width: 8px; height: 2px; display: inline-block; }
+.swatch.cyan { background: var(--cyan); }
+.swatch.amber { background: var(--amber); }
+
+.spark-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: var(--mute);
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* big stats */
+.stat-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.stat-cell {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 6px;
+}
+.stat-cell .lbl {
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: var(--mute);
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 4px;
+}
+.stat-cell .val {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--white);
+  letter-spacing: -0.02em;
+  font-family: 'JetBrains Mono', monospace;
+}
+.stat-cell .val.drop { color: var(--amber); }
+.stat-cell .sub {
+  font-size: 8px;
+  color: var(--mute);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 2px;
+}
+
+/* oil row */
+.oil-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+}
+.oil-cell {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 6px 4px;
+}
+.oil-cell .l {
+  font-size: 7px;
+  letter-spacing: 0.14em;
+  color: var(--mute);
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+}
+.oil-cell .v {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--white);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 2px;
+}
+.oil-cell .d {
+  font-size: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 1px;
+}
+.oil-cell .d.up { color: var(--green); }
+.oil-cell .d.down { color: var(--red); }
+
+/* footer controls */
+.foot-ctrl {
+  display: flex;
+  gap: 4px;
+  margin-top: 12px;
+}
+.foot-ctrl button {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 24px;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--mute);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  border-radius: 3px;
+}
+.foot-ctrl button.wide {
+  width: auto;
+  padding: 0 10px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+.foot-ctrl button:hover { color: var(--cyan); border-color: var(--cyan); }
+
+/* ============ CENTER MAP ============ */
+.map-zone {
+  grid-row: 1;
+  grid-column: 2;
+  position: relative;
+  background: var(--bg-0);
+  overflow: hidden;
+}
+#map {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-0);
+}
+/* leaflet dark override */
+.leaflet-container { background: var(--bg-0); font-family: 'Inter', sans-serif; }
+.leaflet-tile { filter: invert(1) hue-rotate(180deg) brightness(0.55) contrast(1.1) saturate(0.6); }
+.leaflet-control-attribution {
+  background: rgba(10, 14, 26, 0.7) !important;
+  color: var(--mute) !important;
+  font-size: 8px !important;
+}
+.leaflet-control-attribution a { color: var(--mute-2) !important; }
+.leaflet-control-zoom { display: none; }
+
+/* live event card centered top */
+.live-card {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 14, 26, 0.92);
+  border: 1px solid var(--line-2);
+  border-radius: 4px;
+  padding: 10px 14px;
+  z-index: 1000;
+  min-width: 280px;
+  backdrop-filter: blur(8px);
+}
+.live-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--mute);
+  font-family: 'JetBrains Mono', monospace;
+}
+.live-card-head .live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--red);
+}
+.live-card-head .live-pill::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--red);
+  animation: pulse 1.2s infinite;
+}
+.live-card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+  text-align: center;
+}
+.live-card-stats .big {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--white);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -0.02em;
+}
+.live-card-stats .lbl {
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: var(--mute);
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 2px;
+}
+.live-card-foot {
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: var(--mute);
+  text-align: center;
+  margin-top: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* chokepoint switcher */
+.chokepoint-switch {
+  position: absolute;
+  bottom: 18px;
+  left: 18px;
+  display: flex;
+  gap: 4px;
+  z-index: 1000;
+}
+.cp-btn {
+  background: rgba(10, 14, 26, 0.85);
+  border: 1px solid var(--line);
+  color: var(--mute-2);
+  padding: 6px 10px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 3px;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+}
+.cp-btn:hover { color: var(--cyan); border-color: var(--cyan); }
+.cp-btn.active { background: var(--cyan); color: var(--bg-0); border-color: var(--cyan); }
+
+/* home link */
+.home-link {
+  position: absolute;
+  bottom: 18px;
+  right: 18px;
+  background: rgba(10, 14, 26, 0.85);
+  border: 1px solid var(--line);
+  color: var(--mute-2);
+  padding: 6px 10px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 3px;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+}
+.home-link:hover { color: var(--cyan); border-color: var(--cyan); }
+
+/* vessel arrow svg */
+.vessel-icon {
+  transition: filter 0.2s;
+}
+.vessel-icon:hover { filter: brightness(1.5); }
+
+/* ============ RIGHT PANEL ============ */
+.panel-right {
+  grid-row: 1;
+  grid-column: 3;
+  background: var(--bg-1);
+  border-left: 1px solid var(--line);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px;
+}
+.panel-right::-webkit-scrollbar { width: 4px; }
+.panel-right::-webkit-scrollbar-track { background: transparent; }
+.panel-right::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 2px; }
+
+.section-head {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--mute);
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 8px;
+  margin-top: 14px;
+  display: flex;
+  justify-content: space-between;
+}
+.section-head:first-child { margin-top: 0; }
+.section-head .meta { color: var(--cyan); }
+
+.kpi-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.kpi {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 6px 4px;
+  text-align: left;
+}
+.kpi .l {
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  color: var(--mute);
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+}
+.kpi .v {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--white);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 2px;
+}
+
+/* preset/filter buttons */
+.btn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.btn-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.btn-grid.full { grid-template-columns: 1fr; }
+
+.layer-btn {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--mute-2);
+  padding: 6px 8px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 3px;
+  text-align: center;
+  transition: all 0.15s;
+}
+.layer-btn:hover { color: var(--white); border-color: var(--line-2); }
+.layer-btn.on { color: var(--cyan); border-color: var(--cyan); background: rgba(93, 211, 255, 0.08); }
+
+.line-info {
+  font-size: 9px;
+  color: var(--mute-2);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.06em;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+}
+
+.selected-vessel {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--mute-2);
+  letter-spacing: 0.04em;
+  min-height: 60px;
+}
+.selected-vessel.empty { color: var(--mute); text-align: center; padding-top: 18px; }
+.selected-vessel .row { display: flex; justify-content: space-between; padding: 2px 0; }
+.selected-vessel .row .k { color: var(--mute); }
+.selected-vessel .row .v { color: var(--white); }
+.selected-vessel .name { font-size: 11px; color: var(--cyan); margin-bottom: 4px; font-weight: 500; }
+
+/* ============ BOTTOM TIMELINE ============ */
+.timeline {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  background: var(--bg-1);
+  border-top: 1px solid var(--line);
+  position: relative;
+  padding: 12px 18px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tl-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.tl-speed {
+  display: flex;
+  gap: 2px;
+}
+.tl-speed button {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--mute);
+  padding: 4px 8px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.tl-speed button.active { color: var(--cyan); border-color: var(--cyan); }
+.tl-speed button:hover { color: var(--white); }
+
+.tl-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--white);
+  letter-spacing: 0.05em;
+}
+.tl-time .sub {
+  display: block;
+  font-size: 8px;
+  color: var(--mute);
+  letter-spacing: 0.14em;
+  margin-top: 2px;
+}
+
+.tl-track-wrap {
+  position: relative;
+  height: 38px;
+}
+.tl-spark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 22px;
+  pointer-events: none;
+}
+.tl-track {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--line);
+  border-radius: 1px;
+}
+.tl-events {
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  right: 0;
+  height: 12px;
+}
+.tl-event-dot {
+  position: absolute;
+  bottom: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  cursor: pointer;
+  border: 1px solid var(--bg-1);
+}
+.tl-event-dot:hover { transform: translateX(-50%) scale(1.4); }
+.tl-event-dot.red { background: var(--red); }
+.tl-event-dot.amber { background: var(--amber); }
+.tl-event-dot.cyan { background: var(--cyan); }
+
+.tl-cursor {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  height: 38px;
+  background: var(--cyan);
+  transform: translateX(-50%);
+  pointer-events: none;
+  box-shadow: 0 0 6px var(--cyan-glow);
+}
+.tl-cursor::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  background: var(--cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+
+.tl-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: ew-resize;
+  z-index: 5;
+}
+
+.tl-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: var(--mute);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* mobile responsive collapse */
+@media (max-width: 980px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+  .panel-left, .panel-right { grid-column: 1; max-height: 220px; }
+  .panel-left { grid-row: 1; border-right: none; border-bottom: 1px solid var(--line); }
+  .map-zone { grid-row: 2; }
+  .panel-right { grid-row: 3; border-left: none; border-top: 1px solid var(--line); }
+  .timeline { grid-row: 4; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ LEFT PANEL ============ -->
+  <aside class="panel-left">
+    <div class="brand"><span class="brand-dot"></span> LNCELOT ORACLE</div>
+    <div class="title">STRAIT OF<br>MALACCA<span class="small">GOD'S EYE VIEW</span></div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="ops">Operational events</button>
+      <button class="tab" data-tab="vessels">Unique vessels</button>
+      <button class="tab" data-tab="cargo">Commercial observed</button>
+    </div>
+
+    <!-- Event chart card -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-label">Full period<br>operational events</span>
+        <div class="card-toggle">
+          <span class="pill">Overview</span>
+          <span class="pill on">Current day</span>
+        </div>
+      </div>
+      <div class="spark-legend">
+        <span><span class="swatch cyan"></span> Inbound</span>
+        <span><span class="swatch amber"></span> Outbound</span>
+      </div>
+      <svg class="spark" id="event-spark" viewBox="0 0 240 60" preserveAspectRatio="none">
+        <path id="spark-in" fill="none" stroke="var(--cyan)" stroke-width="1.2" />
+        <path id="spark-out" fill="none" stroke="var(--amber)" stroke-width="1.2" />
+        <line id="spark-cursor" x1="0" y1="0" x2="0" y2="60" stroke="var(--cyan)" stroke-width="0.5" stroke-dasharray="2 2" opacity="0.6"/>
+      </svg>
+      <div class="spark-axis">
+        <span id="spark-start">JAN 1, 2024</span>
+        <span id="spark-end">APR 29, 2026</span>
+      </div>
+    </div>
+
+    <!-- Three big stats -->
+    <div class="stat-row">
+      <div class="stat-cell">
+        <div class="lbl">Daily transits</div>
+        <div class="val mono">218.4</div>
+        <div class="sub">avg/day</div>
+      </div>
+      <div class="stat-cell">
+        <div class="lbl">China bound</div>
+        <div class="val mono">87.1</div>
+        <div class="sub">/day</div>
+      </div>
+      <div class="stat-cell">
+        <div class="lbl">YoY growth</div>
+        <div class="val mono drop">+12.4%</div>
+        <div class="sub">vs 2024</div>
+      </div>
+    </div>
+
+    <!-- Oil/freight metrics -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-label">Oil & freight matrix</span>
+        <span class="card-label" id="oil-date">APR 29, 2026</span>
+      </div>
+      <div class="oil-grid">
+        <div class="oil-cell">
+          <div class="l">Brent</div>
+          <div class="v" id="brent-val">$78.42</div>
+          <div class="d up" id="brent-chg">+1.21%</div>
+        </div>
+        <div class="oil-cell">
+          <div class="l">WTI</div>
+          <div class="v" id="wti-val">$73.91</div>
+          <div class="d up" id="wti-chg">+0.94%</div>
+        </div>
+        <div class="oil-cell">
+          <div class="l">Bunker SG</div>
+          <div class="v" id="bunker-val">$594</div>
+          <div class="d down" id="bunker-chg">-0.31%</div>
+        </div>
+      </div>
+      <svg class="spark" id="brent-spark" viewBox="0 0 240 50" preserveAspectRatio="none" style="height: 40px; margin-top: 8px;">
+        <path id="brent-line" fill="none" stroke="var(--amber)" stroke-width="1" />
+      </svg>
+      <div class="spark-axis">
+        <span>FEB 25, 2026</span>
+        <span>APR 29, 2026</span>
+      </div>
+    </div>
+
+    <div class="foot-ctrl">
+      <button id="zoom-in" title="Zoom in">+</button>
+      <button id="zoom-out" title="Zoom out">−</button>
+      <button class="wide" id="reset-view">RESET VIEW</button>
+    </div>
+  </aside>
+
+  <!-- ============ CENTER MAP ============ -->
+  <main class="map-zone">
+    <div id="map"></div>
+
+    <div class="live-card">
+      <div class="live-card-head">
+        <span class="live-pill">LIVE</span>
+        <span class="mono" id="live-date">APR 29, 2026</span>
+      </div>
+      <div class="live-card-stats">
+        <div>
+          <div class="big mono" id="live-total">87</div>
+          <div class="lbl">Crossing<br>events</div>
+        </div>
+        <div>
+          <div class="big mono" id="live-in">42</div>
+          <div class="lbl">↓ In</div>
+        </div>
+        <div>
+          <div class="big mono" id="live-out">45</div>
+          <div class="lbl">↑ Out</div>
+        </div>
+      </div>
+      <div class="live-card-foot" id="live-foot">DARK TRANSIT: LAYER OFF</div>
+    </div>
+
+    <div class="chokepoint-switch">
+      <a href="oracle-cape" class="cp-btn">Cape of Good Hope</a>
+      <a href="oracle-hormuz" class="cp-btn">Strait of Hormuz</a>
+      <a href="oracle-malacca" class="cp-btn active">Strait of Malacca</a>
+    </div>
+
+    <a href="globe" class="home-link">↗ Africa Oracle Globe</a>
+  </main>
+
+  <!-- ============ RIGHT PANEL ============ -->
+  <aside class="panel-right">
+    <div class="section-head">Analyst controls</div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="l">Vessels</div><div class="v" id="kpi-vessels">28,142</div></div>
+      <div class="kpi"><div class="l">Active</div><div class="v" id="kpi-active">12,890</div></div>
+      <div class="kpi"><div class="l">Logged events</div><div class="v" id="kpi-events">94,718</div></div>
+    </div>
+
+    <div class="section-head">Presets</div>
+    <div class="btn-grid full">
+      <button class="layer-btn on" data-preset="full">Full period</button>
+    </div>
+    <div class="btn-grid">
+      <button class="layer-btn" data-preset="before">Pre 2024</button>
+      <button class="layer-btn" data-preset="after">2025+</button>
+    </div>
+
+    <div class="section-head">Filters <span class="meta">0 ACTIVE</span></div>
+    <div class="btn-grid">
+      <button class="layer-btn" data-filter="tankers">Tankers</button>
+      <button class="layer-btn" data-filter="bulk">Bulk carrier</button>
+      <button class="layer-btn" data-filter="container">Container</button>
+      <button class="layer-btn" data-filter="lng">LNG/LPG</button>
+    </div>
+
+    <div class="section-head">Layers <span class="meta" id="layer-count">5 ENABLED</span></div>
+    <div class="btn-grid three">
+      <button class="layer-btn on" data-layer="trips">Trips</button>
+      <button class="layer-btn on" data-layer="heads">Heads</button>
+      <button class="layer-btn" data-layer="density">Density</button>
+    </div>
+    <div class="btn-grid three">
+      <button class="layer-btn on" data-layer="pipelines">Pipelines</button>
+      <button class="layer-btn" data-layer="strikes">Strikes</button>
+      <button class="layer-btn on" data-layer="infra">Infrastructure</button>
+    </div>
+    <div class="btn-grid three">
+      <button class="layer-btn" data-layer="desal">Desal</button>
+      <button class="layer-btn on" data-layer="dates">Dates</button>
+      <button class="layer-btn" data-layer="dark">Dark gap</button>
+    </div>
+
+    <div class="section-head">Pipelines</div>
+    <div class="line-info">
+      <span>Trans-ASEAN</span>
+      <span class="mono">12H VISIBLE</span>
+    </div>
+
+    <div class="section-head">Dark transit watch</div>
+    <div class="line-info">
+      <span>AIS gap detect</span>
+      <span class="mono" style="color: var(--mute)">LAYER OFF</span>
+    </div>
+
+    <div class="section-head">Selected vessel</div>
+    <div class="selected-vessel empty" id="selected-vessel">
+      None
+    </div>
+  </aside>
+
+  <!-- ============ BOTTOM TIMELINE ============ -->
+  <div class="timeline">
+    <div class="tl-controls">
+      <div class="tl-speed">
+        <button id="play-toggle">PLAY</button>
+        <button data-speed="0.5">30M/S</button>
+        <button data-speed="2">2H/S</button>
+        <button data-speed="6">6H/S</button>
+        <button class="active" data-speed="24">1D/S</button>
+      </div>
+      <div class="tl-time">
+        <span id="tl-time-iso" class="mono">2026-04-29 06:00:00.000Z</span>
+        <span class="sub" id="tl-time-meta">4,712 ACTIVE VESSELS · 8 CACHED DAY CHUNKS</span>
+      </div>
+    </div>
+    <div class="tl-track-wrap">
+      <svg class="tl-spark" id="tl-spark" preserveAspectRatio="none" viewBox="0 0 1000 22">
+        <path id="tl-spark-cyan" fill="none" stroke="var(--cyan)" stroke-width="0.6" opacity="0.5"/>
+        <path id="tl-spark-amber" fill="none" stroke="var(--amber)" stroke-width="0.6" opacity="0.5"/>
+      </svg>
+      <div class="tl-track"></div>
+      <div class="tl-events" id="tl-events"></div>
+      <div class="tl-cursor" id="tl-cursor" style="left: 80%"></div>
+      <input type="range" min="0" max="1000" value="800" class="tl-input" id="tl-input">
+    </div>
+    <div class="tl-axis">
+      <span>JAN 1, 2024</span>
+      <span>APR 29, 2026</span>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+'use strict';
+
+/* ============================================================
+   CHOKEPOINT CONFIG — change this object to spin up new scene
+   ============================================================ */
+const CHOKEPOINT = {
+  slug: 'strait-of-malacca',
+  name: 'Strait of Malacca',
+  center: [3.0, 101.5],
+  zoom: 6,
+  bounds: [[1, 98], [6, 105]],
+  chokeLine: { lat: 2.5, lonStart: 100.5, lonEnd: 103.0 },
+  infrastructure: [
+    { name: 'Singapore Port', type: 'port', lat: 1.27, lon: 103.83, throughput: '38M TEU/yr — world #2' },
+    { name: 'Port Klang', type: 'port', lat: 3.00, lon: 101.40, throughput: '14M TEU/yr Malaysia' },
+    { name: 'Tanjung Pelepas', type: 'port', lat: 1.36, lon: 103.55, throughput: '11M TEU Malaysia' },
+    { name: 'Belawan', type: 'port', lat: 3.78, lon: 98.69, throughput: 'Indonesia North Sumatra' },
+    { name: 'Singapore refinery', type: 'refinery', lat: 1.27, lon: 103.69, capacity: '605kb/d ExxonMobil + Shell' },
+    { name: 'Pengerang refinery', type: 'refinery', lat: 1.36, lon: 104.18, capacity: '300kb/d Petronas' },
+    { name: 'SEA-ME-WE 5 cable', type: 'cable', lat: 1.32, lon: 103.85, capacity: 'Asia-Europe trunk' },
+  ],
+  pipelines: [
+    { name: 'Trans-ASEAN gas pipeline', coords: [[3.16, 101.71], [2.94, 101.78], [1.42, 103.55], [-6.21, 106.85]] },
+    { name: 'Kra Canal proposed bypass', coords: [[10.10, 99.20], [9.80, 98.50], [8.95, 98.30]] },
+  ],
+  events: [
+    { date: '2024-01-15', label: 'Suez crisis Asian reroute peak', severity: 'amber' },
+    { date: '2024-04-22', label: 'Singapore congestion record', severity: 'amber' },
+    { date: '2024-06-10', label: 'SCS PLA Navy exercise', severity: 'red' },
+    { date: '2024-09-12', label: 'Philippines-China shoal incident', severity: 'red' },
+    { date: '2025-01-20', label: 'Kra Canal feasibility revived', severity: 'cyan' },
+    { date: '2025-05-08', label: 'Singapore bunker volume ATH', severity: 'cyan' },
+    { date: '2025-08-15', label: 'PLAN deployment Indian Ocean', severity: 'amber' },
+    { date: '2025-11-22', label: 'China iron ore import surge', severity: 'cyan' },
+    { date: '2026-02-04', label: 'Taiwan strait tensions escalate', severity: 'red' },
+    { date: '2026-03-11', label: 'Africa-Asia trade volume +18%', severity: 'cyan' },
+    { date: '2026-04-15', label: 'Cape vs Malacca routing analysis', severity: 'cyan' },
+  ],
+};
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const STATE = {
+  // simulated time runs from Nov 1 2023 to Apr 29 2026 (~910 days)
+  timeStart: new Date('2024-01-01T00:00:00Z').getTime(),
+  timeEnd: new Date('2026-04-29T00:00:00Z').getTime(),
+  timeNow: new Date('2026-02-27T07:28:50Z').getTime(),
+  playing: false,
+  speed: 24,
+  layers: { trips: true, heads: true, density: false, pipelines: true, strikes: false, infra: true, desal: false, dates: true, dark: false },
+  filter: null,
+  vessels: [],
+  selectedVessel: null,
+};
+
+/* ============================================================
+   VESSEL GENERATOR — produces realistic AIS-style records
+   Swap to live AISStream.io WebSocket by replacing this fn
+   ============================================================ */
+const FLAGS = ['LR', 'PA', 'MH', 'SG', 'MT', 'CN', 'HK', 'JP', 'KR', 'IN', 'PK', 'ID', 'MY', 'TH', 'VN', 'PH', 'BD', 'AU', 'CY'];
+const TYPES = ['Tanker', 'Bulk carrier', 'Container', 'LNG carrier', 'LPG tanker', 'General cargo', 'Vehicle carrier'];
+const SHIP_NAMES = ['MSC Anna', 'CMA CGM Marco Polo', 'Ever Given', 'OOCL Hong Kong', 'COSCO Shipping', 'Yang Ming', 'Hapag Express', 'Maersk Madrid', 'Hyundai Brave', 'Japan Maru', 'Singapore Spirit', 'Malacca Wave', 'Sumatra Star', 'Java Sea', 'Borneo Pioneer', 'Pacific Crown', 'Oriental Pearl', 'Mandarin Trader', 'Silk Route', 'Asian Glory'];
+
+function generateVessels(n) {
+  const vessels = [];
+  for (let i = 0; i < n; i++) {
+    const inbound = Math.random() > 0.5;
+    const t = Math.random();
+    let lat, lon, heading;
+    if (Math.random() > 0.5) {
+      // Andaman side (north-west of strait)
+      lat = 4.5 + Math.random() * 1.5 + Math.sin(t * Math.PI) * 0.3;
+      lon = 98.5 + t * 2.5 + (Math.random() - 0.5) * 0.6;
+      heading = inbound ? 130 + (Math.random() - 0.5) * 25 : 310 + (Math.random() - 0.5) * 25;
+    } else {
+      // Singapore Strait side (south-east)
+      lat = 1.5 + Math.random() * 1.5 + Math.cos(t * Math.PI) * 0.3;
+      lon = 103 + t * 2 + (Math.random() - 0.5) * 0.6;
+      heading = inbound ? 320 + (Math.random() - 0.5) * 25 : 140 + (Math.random() - 0.5) * 25;
+    }
+    const dark = Math.random() < 0.06;
+    vessels.push({
+      mmsi: 200000000 + Math.floor(Math.random() * 700000000),
+      name: SHIP_NAMES[Math.floor(Math.random() * SHIP_NAMES.length)] + ' ' + Math.floor(Math.random() * 99),
+      flag: FLAGS[Math.floor(Math.random() * FLAGS.length)],
+      type: TYPES[Math.floor(Math.random() * TYPES.length)],
+      lat,
+      lon,
+      heading,
+      speed: 8 + Math.random() * 14,
+      inbound,
+      dark,
+      destination: inbound ? ['Singapore', 'Port Klang', 'Tanjung Pelepas', 'Shanghai', 'Yokohama'][Math.floor(Math.random() * 5)] : ['Mumbai', 'Colombo', 'Durban', 'Rotterdam', 'Mombasa'][Math.floor(Math.random() * 5)],
+    });
+  }
+  return vessels;
+}
+
+/* ============================================================
+   MAP — Leaflet with dark CartoDB tiles inverted
+   ============================================================ */
+const map = L.map('map', {
+  zoomControl: false,
+  attributionControl: true,
+  preferCanvas: true,
+}).setView(CHOKEPOINT.center, CHOKEPOINT.zoom);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OSM &copy; CARTO · LNCELOT Oracle',
+  maxZoom: 12,
+  minZoom: 4,
+}).addTo(map);
+
+const layerGroups = {
+  vessels: L.layerGroup().addTo(map),
+  pipelines: L.layerGroup().addTo(map),
+  infra: L.layerGroup().addTo(map),
+  events: L.layerGroup().addTo(map),
+  chokeLine: L.layerGroup().addTo(map),
+};
+
+// chokepoint reference line (the virtual line vessels cross)
+function drawChokeLine() {
+  layerGroups.chokeLine.clearLayers();
+  L.polyline([
+    [CHOKEPOINT.chokeLine.lat, CHOKEPOINT.chokeLine.lonStart],
+    [CHOKEPOINT.chokeLine.lat, CHOKEPOINT.chokeLine.lonEnd],
+  ], {
+    color: '#5dd3ff',
+    weight: 1,
+    dashArray: '6 4',
+    opacity: 0.5,
+  }).addTo(layerGroups.chokeLine);
+}
+drawChokeLine();
+
+function drawPipelines() {
+  layerGroups.pipelines.clearLayers();
+  if (!STATE.layers.pipelines) return;
+  CHOKEPOINT.pipelines.forEach(p => {
+    L.polyline(p.coords, {
+      color: '#f5b961',
+      weight: 1.4,
+      dashArray: '4 3',
+      opacity: 0.7,
+    }).bindTooltip(p.name, { className: 'lncelot-tooltip', direction: 'top' }).addTo(layerGroups.pipelines);
+  });
+}
+drawPipelines();
+
+function drawInfra() {
+  layerGroups.infra.clearLayers();
+  if (!STATE.layers.infra) return;
+  CHOKEPOINT.infrastructure.forEach(i => {
+    const color = i.type === 'port' ? '#5dd3ff' : i.type === 'refinery' ? '#ff5f6d' : '#f5b961';
+    const icon = L.divIcon({
+      html: `<div style="width:8px;height:8px;border-radius:50%;background:${color};box-shadow:0 0 6px ${color};border:1px solid rgba(0,0,0,0.5);"></div>`,
+      className: '', iconSize: [8, 8], iconAnchor: [4, 4],
+    });
+    L.marker([i.lat, i.lon], { icon }).bindTooltip(`<strong>${i.name}</strong><br>${i.throughput || i.capacity || ''}`, { className: 'lncelot-tooltip', direction: 'top' }).addTo(layerGroups.infra);
+  });
+}
+drawInfra();
+
+/* ---- vessel rendering ---- */
+function vesselIcon(v) {
+  const color = v.dark ? 'var(--vessel-dark)' : v.inbound ? 'var(--vessel-in)' : 'var(--vessel-out)';
+  const fill = v.dark ? '#ff5f6d' : v.inbound ? '#e8edf5' : '#f5b961';
+  // arrow svg pointing in heading direction
+  return L.divIcon({
+    html: `<svg class="vessel-icon" width="10" height="10" viewBox="0 0 10 10" style="transform: rotate(${v.heading}deg); display:block;">
+      <polygon points="5,1 9,9 5,7 1,9" fill="${fill}" stroke="rgba(0,0,0,0.4)" stroke-width="0.3"/>
+    </svg>`,
+    className: '', iconSize: [10, 10], iconAnchor: [5, 5],
+  });
+}
+
+function renderVessels() {
+  layerGroups.vessels.clearLayers();
+  if (!STATE.layers.trips && !STATE.layers.heads) return;
+  STATE.vessels.forEach((v, idx) => {
+    if (STATE.filter && !v.type.toLowerCase().includes(STATE.filter)) return;
+    const m = L.marker([v.lat, v.lon], { icon: vesselIcon(v) });
+    m.on('click', () => selectVessel(v));
+    m.addTo(layerGroups.vessels);
+  });
+}
+
+function selectVessel(v) {
+  STATE.selectedVessel = v;
+  const el = document.getElementById('selected-vessel');
+  el.classList.remove('empty');
+  el.innerHTML = `
+    <div class="name">${v.name}</div>
+    <div class="row"><span class="k">MMSI</span><span class="v">${v.mmsi}</span></div>
+    <div class="row"><span class="k">FLAG</span><span class="v">${v.flag}</span></div>
+    <div class="row"><span class="k">TYPE</span><span class="v">${v.type}</span></div>
+    <div class="row"><span class="k">SPEED</span><span class="v">${v.speed.toFixed(1)} kn</span></div>
+    <div class="row"><span class="k">HEADING</span><span class="v">${Math.round(v.heading)}°</span></div>
+    <div class="row"><span class="k">DEST</span><span class="v">${v.destination}</span></div>
+    <div class="row"><span class="k">STATUS</span><span class="v" style="color:${v.dark ? 'var(--red)' : 'var(--green)'}">${v.dark ? 'DARK / AIS GAP' : 'AIS ACTIVE'}</span></div>
+  `;
+}
+
+/* ============================================================
+   SPARKLINES — event chart + brent + timeline
+   ============================================================ */
+function generateEventCurve() {
+  const days = Math.floor((STATE.timeEnd - STATE.timeStart) / (24 * 3600 * 1000));
+  const inSeries = [], outSeries = [];
+  for (let d = 0; d < days; d++) {
+    let base = 218 + Math.sin(d / 30) * 18 + Math.sin(d / 7) * 5;
+    base += (Math.random() - 0.5) * 8;
+    inSeries.push(Math.max(50, base * 0.49));
+    outSeries.push(Math.max(50, base * 0.51));
+  }
+  return { inSeries, outSeries };
+}
+
+const curves = generateEventCurve();
+
+function pathFromSeries(series, w, h) {
+  const max = Math.max(...series);
+  const min = Math.min(...series);
+  const range = max - min || 1;
+  return series.map((v, i) => {
+    const x = (i / (series.length - 1)) * w;
+    const y = h - ((v - min) / range) * h * 0.85 - h * 0.075;
+    return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+  }).join(' ');
+}
+
+function renderSparklines() {
+  document.getElementById('spark-in').setAttribute('d', pathFromSeries(curves.inSeries, 240, 60));
+  document.getElementById('spark-out').setAttribute('d', pathFromSeries(curves.outSeries, 240, 60));
+  document.getElementById('tl-spark-cyan').setAttribute('d', pathFromSeries(curves.inSeries, 1000, 22));
+  document.getElementById('tl-spark-amber').setAttribute('d', pathFromSeries(curves.outSeries, 1000, 22));
+
+  // brent — fake oil curve from Feb 25 to Apr 29
+  const brentSeries = [];
+  for (let i = 0; i < 60; i++) {
+    brentSeries.push(72 + Math.sin(i / 8) * 4 + Math.cos(i / 5) * 2 + (Math.random() - 0.5) * 1.5);
+  }
+  document.getElementById('brent-line').setAttribute('d', pathFromSeries(brentSeries, 240, 50));
+}
+renderSparklines();
+
+/* ============================================================
+   TIMELINE EVENTS
+   ============================================================ */
+function renderTimelineEvents() {
+  const container = document.getElementById('tl-events');
+  container.innerHTML = '';
+  const span = STATE.timeEnd - STATE.timeStart;
+  CHOKEPOINT.events.forEach(e => {
+    const t = new Date(e.date).getTime();
+    const pct = ((t - STATE.timeStart) / span) * 100;
+    const dot = document.createElement('div');
+    dot.className = 'tl-event-dot ' + e.severity;
+    dot.style.left = pct + '%';
+    dot.title = e.date + ' — ' + e.label;
+    dot.addEventListener('click', () => {
+      STATE.timeNow = t;
+      updateTime();
+    });
+    container.appendChild(dot);
+  });
+}
+renderTimelineEvents();
+
+/* ============================================================
+   TIME / PLAYBACK
+   ============================================================ */
+function updateTime() {
+  const span = STATE.timeEnd - STATE.timeStart;
+  const pct = ((STATE.timeNow - STATE.timeStart) / span) * 100;
+  document.getElementById('tl-cursor').style.left = pct + '%';
+  document.getElementById('tl-input').value = pct * 10;
+
+  const d = new Date(STATE.timeNow);
+  const iso = d.toISOString().replace('T', ' ').replace('Z', 'Z');
+  document.getElementById('tl-time-iso').textContent = iso;
+
+  const day = d.toUTCString().slice(5, 16).toUpperCase();
+  document.getElementById('live-date').textContent = day;
+  document.getElementById('oil-date').textContent = day;
+
+  // update spark cursor
+  const sparkX = (pct / 100) * 240;
+  document.getElementById('spark-cursor').setAttribute('x1', sparkX);
+  document.getElementById('spark-cursor').setAttribute('x2', sparkX);
+
+  // recompute live stats based on time position — interpolate from curves
+  const dayIdx = Math.min(curves.inSeries.length - 1, Math.floor((STATE.timeNow - STATE.timeStart) / (24 * 3600 * 1000)));
+  const inN = Math.round(curves.inSeries[dayIdx]);
+  const outN = Math.round(curves.outSeries[dayIdx]);
+  document.getElementById('live-in').textContent = inN;
+  document.getElementById('live-out').textContent = outN;
+  document.getElementById('live-total').textContent = inN + outN;
+}
+updateTime();
+
+let playInterval = null;
+function play() {
+  if (playInterval) clearInterval(playInterval);
+  STATE.playing = true;
+  document.getElementById('play-toggle').textContent = 'PAUSE';
+  playInterval = setInterval(() => {
+    STATE.timeNow += STATE.speed * 3600 * 1000; // hours per tick
+    if (STATE.timeNow >= STATE.timeEnd) {
+      STATE.timeNow = STATE.timeStart;
+    }
+    // jitter vessels for animation
+    STATE.vessels.forEach(v => {
+      const dlat = Math.cos(v.heading * Math.PI / 180) * v.speed * 0.0001 * STATE.speed * (v.inbound ? -1 : 1);
+      const dlon = Math.sin(v.heading * Math.PI / 180) * v.speed * 0.0001 * STATE.speed * (v.inbound ? 1 : -1);
+      v.lat += dlat;
+      v.lon += dlon;
+      // wrap
+      if (v.lon > 28 || v.lon < 14 || v.lat > -29 || v.lat < -38) {
+        v.lat = -34.5 + (Math.random() - 0.5) * 4;
+        v.lon = 17 + Math.random() * 9;
+      }
+    });
+    renderVessels();
+    updateTime();
+  }, 200);
+}
+
+function pause() {
+  if (playInterval) clearInterval(playInterval);
+  STATE.playing = false;
+  document.getElementById('play-toggle').textContent = 'PLAY';
+}
+
+document.getElementById('play-toggle').addEventListener('click', () => {
+  STATE.playing ? pause() : play();
+});
+
+document.querySelectorAll('.tl-speed [data-speed]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.tl-speed [data-speed]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    STATE.speed = parseFloat(b.dataset.speed);
+  });
+});
+
+document.getElementById('tl-input').addEventListener('input', e => {
+  const pct = parseFloat(e.target.value) / 10;
+  STATE.timeNow = STATE.timeStart + (STATE.timeEnd - STATE.timeStart) * (pct / 100);
+  updateTime();
+});
+
+/* ============================================================
+   LAYER & FILTER TOGGLES
+   ============================================================ */
+document.querySelectorAll('[data-layer]').forEach(b => {
+  b.addEventListener('click', () => {
+    const layer = b.dataset.layer;
+    STATE.layers[layer] = !STATE.layers[layer];
+    b.classList.toggle('on', STATE.layers[layer]);
+    if (layer === 'pipelines') drawPipelines();
+    if (layer === 'infra') drawInfra();
+    if (layer === 'trips' || layer === 'heads' || layer === 'dark') renderVessels();
+    if (layer === 'dark') {
+      document.getElementById('live-foot').textContent = 'DARK TRANSIT: LAYER ' + (STATE.layers.dark ? 'ON' : 'OFF');
+    }
+    const enabled = Object.values(STATE.layers).filter(Boolean).length;
+    document.getElementById('layer-count').textContent = enabled + ' ENABLED';
+  });
+});
+
+document.querySelectorAll('[data-filter]').forEach(b => {
+  b.addEventListener('click', () => {
+    const f = b.dataset.filter;
+    if (STATE.filter === f) {
+      STATE.filter = null;
+      b.classList.remove('on');
+    } else {
+      document.querySelectorAll('[data-filter]').forEach(x => x.classList.remove('on'));
+      STATE.filter = f === 'tankers' ? 'tanker' : f === 'bulk' ? 'bulk' : f === 'container' ? 'container' : 'lng';
+      b.classList.add('on');
+    }
+    renderVessels();
+  });
+});
+
+document.querySelectorAll('[data-preset]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('[data-preset]').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    const p = b.dataset.preset;
+    if (p === 'before') STATE.timeNow = new Date('2024-03-01').getTime();
+    if (p === 'after') STATE.timeNow = new Date('2025-09-01').getTime();
+    if (p === 'full') STATE.timeNow = new Date('2026-04-29').getTime();
+    updateTime();
+  });
+});
+
+/* tabs */
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+  });
+});
+
+/* zoom buttons */
+document.getElementById('zoom-in').addEventListener('click', () => map.zoomIn());
+document.getElementById('zoom-out').addEventListener('click', () => map.zoomOut());
+document.getElementById('reset-view').addEventListener('click', () => map.setView(CHOKEPOINT.center, CHOKEPOINT.zoom));
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+STATE.vessels = generateVessels(380);
+renderVessels();
+
+// auto-start in playing state for the demo
+setTimeout(() => play(), 800);
+</script>
+</body>
+</html>
