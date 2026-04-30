@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LNCELOT — Africa's Oracle · Predict Everything</title>
+<meta name="description" content="Africa's first intelligence-backed prediction market platform. Sports, politics, commodities, elections. 54 nations. Swarm AI. Built in South Africa.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/globe.gl@2.27.1/dist/globe.gl.min.js"></script>
+<style>
+:root{
+  --bg:#03060c;--bg2:#07090f;--surface:#0d1117;--s2:#131820;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.15);
+  --accent:#00e5a0;--accent2:#00b8ff;--gold:#fbbf24;--purple:#a78bfa;
+  --text:#f0f4f8;--dim:#7a8599;--muted:#3a4660;
+  --mono:'Share Tech Mono',monospace;--head:'Orbitron',sans-serif;--body:'Inter',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--body);overflow-x:hidden;}
+body{background:radial-gradient(ellipse at top,#0a1428 0%,var(--bg) 40%,var(--bg) 100%);}
+
+/* ── NAV ── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:18px 32px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(3,6,12,0.6);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);}
+.brand{font-family:var(--head);font-size:16px;font-weight:900;letter-spacing:5px;cursor:pointer;}
+.brand .b1{color:var(--accent);}
+.brand .b2{color:var(--accent2);}
+.nav-right{display:flex;align-items:center;gap:20px;}
+.nav-link{font-size:13px;color:var(--dim);cursor:pointer;text-decoration:none;transition:color 0.15s;font-weight:500;letter-spacing:.5px;}
+.nav-link:hover{color:var(--text);}
+.nav-cta{background:var(--accent);color:#000;padding:8px 18px;border-radius:8px;
+  font-size:13px;font-weight:600;cursor:pointer;border:none;letter-spacing:.3px;
+  transition:transform 0.15s,box-shadow 0.15s;font-family:var(--body);}
+.nav-cta:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,229,160,0.3);}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:100px 24px 60px;text-align:center;position:relative;}
+
+#globe-hero{position:absolute;inset:0;z-index:0;opacity:0.5;pointer-events:none;}
+#globe-hero canvas{pointer-events:none !important;}
+
+.hero-inner{position:relative;z-index:2;max-width:900px;}
+
+.hero-badge{display:inline-flex;align-items:center;gap:8px;
+  background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.25);
+  border-radius:20px;padding:6px 14px;margin-bottom:28px;
+  font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;}
+.hero-badge .live{width:6px;height:6px;border-radius:50%;background:var(--accent);
+  animation:pulse 2s infinite;box-shadow:0 0 10px var(--accent);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.hero-title{font-family:var(--head);font-size:clamp(42px,7vw,88px);font-weight:900;
+  line-height:1.05;letter-spacing:-1px;margin-bottom:20px;}
+.hero-title .line1{color:var(--text);display:block;}
+.hero-title .line2{background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 60%,var(--purple) 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;display:block;}
+
+.hero-sub{font-size:clamp(15px,2vw,20px);color:var(--dim);max-width:680px;
+  margin:0 auto 38px;line-height:1.7;font-weight:400;}
+.hero-sub b{color:var(--text);font-weight:500;}
+
+.hero-cta{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:48px;}
+.btn-primary{background:var(--accent);color:#000;padding:14px 28px;border-radius:10px;
+  font-size:14px;font-weight:700;cursor:pointer;border:none;letter-spacing:.3px;
+  display:inline-flex;align-items:center;gap:8px;transition:all 0.15s;font-family:var(--body);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,229,160,0.35);}
+.btn-secondary{background:rgba(255,255,255,0.05);color:var(--text);padding:14px 28px;
+  border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;
+  border:1px solid var(--border2);letter-spacing:.3px;
+  display:inline-flex;align-items:center;gap:8px;transition:all 0.15s;font-family:var(--body);}
+.btn-secondary:hover{background:rgba(255,255,255,0.1);border-color:var(--accent);color:var(--accent);}
+.btn-ghost{background:transparent;color:var(--dim);padding:14px 20px;border-radius:10px;
+  font-size:14px;font-weight:500;cursor:pointer;border:none;letter-spacing:.3px;transition:color 0.15s;font-family:var(--body);}
+.btn-ghost:hover{color:var(--text);}
+
+/* ── SOCIAL PROOF ── */
+.proof-bar{display:flex;flex-wrap:wrap;justify-content:center;gap:36px;
+  padding-top:36px;border-top:1px solid var(--border);max-width:720px;margin:0 auto;}
+.proof-stat{text-align:center;}
+.proof-val{font-family:var(--head);font-size:24px;font-weight:700;color:var(--accent);}
+.proof-lbl{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:2px;margin-top:4px;text-transform:uppercase;}
+
+/* ── SECTIONS ── */
+.section{padding:100px 24px;position:relative;}
+.section-inner{max-width:1100px;margin:0 auto;}
+.section-label{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:3px;margin-bottom:14px;text-transform:uppercase;}
+.section-title{font-family:var(--head);font-size:clamp(32px,5vw,54px);font-weight:900;
+  line-height:1.1;margin-bottom:20px;letter-spacing:-1px;}
+.section-sub{font-size:16px;color:var(--dim);max-width:700px;line-height:1.7;margin-bottom:48px;}
+
+/* ── SURFACE CARDS ── */
+.surfaces{display:grid;grid-template-columns:1fr;gap:16px;}
+@media(min-width:900px){.surfaces{grid-template-columns:repeat(3,1fr);}}
+
+.surface{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:28px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+.surface:hover{border-color:var(--border2);transform:translateY(-4px);}
+.surface:hover .s-arrow{transform:translate(3px,-3px);color:var(--accent);}
+.surface::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:0;transition:opacity 0.3s;}
+.surface:hover::before{opacity:1;}
+
+.s-num{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:18px;}
+.s-icon{font-size:32px;margin-bottom:18px;display:block;filter:drop-shadow(0 2px 20px rgba(0,229,160,0.4));}
+.s-title{font-family:var(--head);font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;letter-spacing:.5px;}
+.s-desc{font-size:13px;color:var(--dim);line-height:1.65;margin-bottom:20px;}
+.s-meta{display:flex;align-items:center;justify-content:space-between;
+  padding-top:16px;border-top:1px solid var(--border);}
+.s-tag{font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;}
+.s-arrow{font-size:18px;color:var(--dim);transition:all 0.2s;}
+
+/* ── FEATURES ── */
+.features{display:grid;grid-template-columns:1fr;gap:14px;}
+@media(min-width:700px){.features{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:1000px){.features{grid-template-columns:repeat(3,1fr);}}
+
+.feature{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color 0.15s;}
+.feature:hover{border-color:var(--border2);}
+.f-icon{width:38px;height:38px;border-radius:8px;background:rgba(0,229,160,0.1);
+  display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:14px;}
+.f-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;}
+.f-desc{font-size:12px;color:var(--dim);line-height:1.6;}
+
+/* ── COMPARISON ── */
+.compare{display:grid;grid-template-columns:1fr;gap:16px;margin-top:32px;}
+@media(min-width:900px){.compare{grid-template-columns:repeat(3,1fr);}}
+.comp-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;}
+.comp-card.us{border-color:var(--accent);background:linear-gradient(135deg,rgba(0,229,160,0.04) 0%,var(--surface) 100%);position:relative;}
+.comp-card.us::before{content:'LEADER';position:absolute;top:-10px;left:24px;
+  background:var(--accent);color:#000;font-family:var(--mono);font-size:9px;letter-spacing:2px;
+  padding:4px 10px;border-radius:4px;font-weight:700;}
+.comp-name{font-family:var(--head);font-size:20px;font-weight:700;margin-bottom:16px;letter-spacing:1px;}
+.comp-card.us .comp-name{color:var(--accent);}
+.comp-line{display:flex;align-items:flex-start;gap:10px;padding:8px 0;font-size:13px;color:var(--dim);line-height:1.5;}
+.comp-check{color:var(--accent);flex-shrink:0;margin-top:1px;}
+.comp-x{color:#ef4444;flex-shrink:0;margin-top:1px;}
+
+/* ── TICKER ── */
+.ticker-section{background:var(--s2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:16px 0;overflow:hidden;margin:40px 0;}
+.ticker-inner{display:flex;gap:40px;white-space:nowrap;animation:scroll 60s linear infinite;}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.t-item{font-family:var(--mono);font-size:11px;color:var(--dim);flex-shrink:0;}
+.t-item b{color:var(--accent);}
+.t-item.r b{color:#f87171;}
+.t-item.g b{color:var(--gold);}
+
+/* ── FOOTER ── */
+.footer{padding:48px 24px 32px;border-top:1px solid var(--border);margin-top:40px;}
+.footer-inner{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px;}
+.foot-left{max-width:380px;}
+.foot-brand{font-family:var(--head);font-size:14px;font-weight:900;letter-spacing:4px;margin-bottom:10px;}
+.foot-brand .b1{color:var(--accent);}.foot-brand .b2{color:var(--accent2);}
+.foot-sub{font-size:12px;color:var(--dim);line-height:1.7;}
+.foot-links{display:flex;gap:40px;flex-wrap:wrap;}
+.foot-col{display:flex;flex-direction:column;gap:8px;}
+.foot-col-title{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase;}
+.foot-link{font-size:12px;color:var(--dim);cursor:pointer;text-decoration:none;transition:color 0.15s;}
+.foot-link:hover{color:var(--text);}
+.foot-bottom{max-width:1100px;margin:32px auto 0;padding-top:24px;border-top:1px solid var(--border);
+  display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;
+  font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:1px;}
+
+/* ── AUTH MODAL ── */
+#auth-modal{display:none;position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;padding:20px;}
+#auth-modal.show{display:flex;}
+.auth-sheet{background:var(--surface);border:1px solid var(--border2);border-radius:16px;
+  max-width:420px;width:100%;padding:32px;animation:slideup 0.2s ease;}
+@keyframes slideup{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.auth-title{font-family:var(--head);font-size:20px;font-weight:700;color:var(--accent);margin-bottom:8px;letter-spacing:1px;}
+.auth-sub{font-size:13px;color:var(--dim);margin-bottom:24px;line-height:1.5;}
+.auth-input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 14px;color:var(--text);font-size:14px;margin-bottom:10px;font-family:var(--body);}
+.auth-input:focus{outline:none;border-color:var(--accent);}
+.auth-btn{width:100%;background:var(--accent);color:#000;padding:13px;border-radius:10px;
+  font-size:14px;font-weight:700;border:none;cursor:pointer;margin-top:8px;font-family:var(--body);}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:18px 0;font-size:11px;color:var(--dim);font-family:var(--mono);letter-spacing:1px;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.auth-social{width:100%;background:var(--s2);color:var(--text);padding:12px;border-radius:10px;
+  border:1px solid var(--border2);font-size:13px;font-weight:500;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;font-family:var(--body);}
+.auth-social:hover{border-color:var(--accent);}
+.auth-switch{text-align:center;font-size:12px;color:var(--dim);margin-top:16px;}
+.auth-switch span{color:var(--accent);cursor:pointer;text-decoration:underline;font-weight:500;}
+.auth-close{position:absolute;top:16px;right:16px;background:transparent;border:none;color:var(--dim);
+  font-size:20px;cursor:pointer;padding:4px 8px;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  .nav{padding:14px 20px;}
+  .nav-right{gap:12px;}
+  .nav-link{display:none;}
+  .hero{padding:90px 20px 50px;}
+  .proof-bar{gap:20px;}
+  .section{padding:70px 20px;}
+  .surface{padding:24px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="brand" onclick="scrollTo(0,0)"><span class="b1">LN</span><span class="b2">CE</span><span class="b1">LOT</span></div>
+  <div class="nav-right">
+    <a class="nav-link" href="markets.html">Markets</a>
+    <a class="nav-link" href="globe.html">Oracle</a>
+    <a class="nav-link" onclick="scrollToSection('about')">About</a>
+    <button class="nav-cta" onclick="openAuth()">Sign in</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div id="globe-hero"></div>
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <div class="live"></div>
+      LIVE · 54 NATIONS · SIRIUS SWARM ENGINE v3.0
+    </div>
+    <h1 class="hero-title">
+      <span class="line1">Africa's Oracle.</span>
+      <span class="line2">Predict Everything.</span>
+    </h1>
+    <p class="hero-sub">
+      The first <b>intelligence-backed prediction market</b> built in Africa. Trade on sports, politics, commodities, elections, and global events — calibrated by real data from <b>54 African nations</b> and a <b>200-agent AI swarm</b> no Western platform can replicate.
+    </p>
+    <div class="hero-cta">
+      <button class="btn-primary" onclick="location.href='markets.html'">
+        Open Markets <span>→</span>
+      </button>
+      <button class="btn-secondary" onclick="location.href='globe.html'">
+        <span>🌍</span> View Intelligence
+      </button>
+      <button class="btn-ghost" onclick="openAuth()">Sign in</button>
+    </div>
+    <div class="proof-bar">
+      <div class="proof-stat"><div class="proof-val">63</div><div class="proof-lbl">Live Markets</div></div>
+      <div class="proof-stat"><div class="proof-val">54</div><div class="proof-lbl">African Nations</div></div>
+      <div class="proof-stat"><div class="proof-val">200</div><div class="proof-lbl">Swarm Agents</div></div>
+      <div class="proof-stat"><div class="proof-val">R20</div><div class="proof-lbl">Min Stake</div></div>
+      <div class="proof-stat"><div class="proof-val">2%</div><div class="proof-lbl">Fee · Free LP</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-section">
+  <div class="ticker-inner" id="ticker"></div>
+</div>
+
+<!-- THREE SURFACES -->
+<section class="section" id="about">
+  <div class="section-inner">
+    <div class="section-label">The Platform</div>
+    <h2 class="section-title">One login. Three surfaces.<br>Every signal connected.</h2>
+    <p class="section-sub">LNCELOT is built as three seamlessly connected experiences. Start anywhere. Jump between them with one tap. Every prediction, every signal, every country — linked.</p>
+
+    <div class="surfaces">
+      <div class="surface" onclick="location.href='markets.html'">
+        <div class="s-num">01 / MARKETS</div>
+        <div class="s-icon">📡</div>
+        <div class="s-title">Prediction Floor</div>
+        <div class="s-desc">63 live markets. Sports, politics, SA intel, minerals, crypto. Polymarket-style UX, calibrated for African culture. Free LP for new users. Real stakes from R20.</div>
+        <div class="s-meta"><span class="s-tag">LIVE NOW</span><span class="s-arrow">↗</span></div>
+      </div>
+
+      <div class="surface" onclick="location.href='globe.html'">
+        <div class="s-num">02 / ORACLE</div>
+        <div class="s-icon">🌍</div>
+        <div class="s-title">Intelligence Globe</div>
+        <div class="s-desc">3D Africa globe with live flights, ships, satellites, commodity prices, radiation, conflict zones, stablecoin flows. Click any country to see its full data moat.</div>
+        <div class="s-meta"><span class="s-tag">SIRIUS v3</span><span class="s-arrow">↗</span></div>
+      </div>
+
+      <div class="surface" onclick="openAuth()">
+        <div class="s-num">03 / PRO</div>
+        <div class="s-icon">⚡</div>
+        <div class="s-title">Institutional Access</div>
+        <div class="s-desc">R99/mo for MiroFish swarm simulations, API access, market creation, real-time institutional data feeds, and early access to African sovereign event markets.</div>
+        <div class="s-meta"><span class="s-tag">R99 / MONTH</span><span class="s-arrow">↗</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" style="background:var(--bg2);">
+  <div class="section-inner">
+    <div class="section-label">Built Different</div>
+    <h2 class="section-title">Why LNCELOT wins.</h2>
+    <p class="section-sub">Polymarket sees the world. Kalshi regulates America. LNCELOT owns Africa — with data no Western platform can access, payment rails no US company can replicate, and a swarm intelligence engine calibrated specifically to African markets.</p>
+
+    <div class="features">
+      <div class="feature"><div class="f-icon">🎯</div><div class="f-title">Real African Data</div><div class="f-desc">54-nation sovereign data. Mineral corridor activity. Election intelligence. SA load shedding. Port throughput. The data moat.</div></div>
+      <div class="feature"><div class="f-icon">🧠</div><div class="f-title">Swarm AI Calibration</div><div class="f-desc">MiroFish simulates 200+ agents per market. Emergent probability discovery. Deployed on Railway. Visible in the dashboard.</div></div>
+      <div class="feature"><div class="f-icon">💳</div><div class="f-title">SA-Native Payments</div><div class="f-desc">SnapScan, PayFast, Capitec Pay, EFT. No crypto wallet required. Stake in Rand. Withdraw to your bank in 24 hours.</div></div>
+      <div class="feature"><div class="f-icon">⚽</div><div class="f-title">Culture-First Markets</div><div class="f-desc">Soweto Derby, Springboks, Proteas, IPL, EPL, UCL. Sports, entertainment, viral moments. Built for South African culture.</div></div>
+      <div class="feature"><div class="f-icon">🗳</div><div class="f-title">Election Intelligence</div><div class="f-desc">ANC, DA, MK Party, Nigeria 2027, Kenya, Zimbabwe. Political probability calibrated by real sentiment data, not Western polls.</div></div>
+      <div class="feature"><div class="f-icon">⛏</div><div class="f-title">Commodity Prediction</div><div class="f-desc">Cobalt direction, gold output vs USDA, platinum recovery, maize yield deviation. Institutional-grade African commodity markets.</div></div>
+      <div class="feature"><div class="f-icon">🎮</div><div class="f-title">Free-to-Play First</div><div class="f-desc">1,000 LP on sign-up. No deposit required. Gamified leaderboards. Streak rewards. Oracle badges. Social prediction pools.</div></div>
+      <div class="feature"><div class="f-icon">🌐</div><div class="f-title">Open Source Intel</div><div class="f-desc">Live flights, ships, fires, satellites, crypto prices, stablecoin flows. Everything the world's best analysts see — and more.</div></div>
+      <div class="feature"><div class="f-icon">🛡</div><div class="f-title">GENIUS-Aligned</div><div class="f-desc">Positioned for the OCC stablecoin rails (Docket OCC-2025-0372). Future-proof payment infrastructure from day one.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section class="section">
+  <div class="section-inner">
+    <div class="section-label">The Market</div>
+    <h2 class="section-title">We are not copying.<br>We are building the category.</h2>
+    <p class="section-sub">Polymarket and Kalshi combined to process nearly $77B in 2025. Neither has a single African market. Neither has African data. The prediction market category for Africa is greenfield — and LNCELOT is first.</p>
+
+    <div class="compare">
+      <div class="comp-card">
+        <div class="comp-name">Polymarket</div>
+        <div class="comp-line"><span class="comp-check">✓</span>Crypto-native (USDC/Polygon)</div>
+        <div class="comp-line"><span class="comp-check">✓</span>0% fees, global reach</div>
+        <div class="comp-line"><span class="comp-check">✓</span>800+ markets</div>
+        <div class="comp-line"><span class="comp-x">✗</span>Zero African coverage</div>
+        <div class="comp-line"><span class="comp-x">✗</span>No intelligence layer</div>
+        <div class="comp-line"><span class="comp-x">✗</span>US regulatory limbo</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-name">Kalshi</div>
+        <div class="comp-line"><span class="comp-check">✓</span>CFTC-regulated DCM</div>
+        <div class="comp-line"><span class="comp-check">✓</span>USD/fiat rails</div>
+        <div class="comp-line"><span class="comp-check">✓</span>$43.1B 2025 volume</div>
+        <div class="comp-line"><span class="comp-x">✗</span>US-only markets</div>
+        <div class="comp-line"><span class="comp-x">✗</span>84% sports-only</div>
+        <div class="comp-line"><span class="comp-x">✗</span>No intelligence moat</div>
+      </div>
+      <div class="comp-card us">
+        <div class="comp-name">LNCELOT</div>
+        <div class="comp-line"><span class="comp-check">✓</span>54-nation African data moat</div>
+        <div class="comp-line"><span class="comp-check">✓</span>SnapScan + crypto hybrid rails</div>
+        <div class="comp-line"><span class="comp-check">✓</span>3D intelligence globe included</div>
+        <div class="comp-line"><span class="comp-check">✓</span>MiroFish swarm calibration</div>
+        <div class="comp-line"><span class="comp-check">✓</span>Physical infrastructure moat</div>
+        <div class="comp-line"><span class="comp-check">✓</span>GENIUS-aligned stablecoin ready</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="text-align:center;background:linear-gradient(135deg,rgba(0,229,160,0.04) 0%,rgba(0,184,255,0.02) 100%);">
+  <div class="section-inner" style="max-width:700px;">
+    <div class="section-label">Start Now</div>
+    <h2 class="section-title">1,000 free prediction points.<br>No deposit required.</h2>
+    <p class="section-sub" style="margin-left:auto;margin-right:auto;">Sign up in 20 seconds. Place your first prediction today. Upgrade to real stakes when you're ready.</p>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;">
+      <button class="btn-primary" onclick="openAuth()">Claim 1,000 LP →</button>
+      <button class="btn-secondary" onclick="location.href='markets.html'">Browse Markets</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="foot-left">
+      <div class="foot-brand"><span class="b1">LN</span><span class="b2">CE</span><span class="b1">LOT</span></div>
+      <div class="foot-sub">Africa's intelligence oracle and prediction market. Built in South Africa. Competing at the top 0.1% globally. Global domination from Day One.</div>
+    </div>
+    <div class="foot-links">
+      <div class="foot-col">
+        <div class="foot-col-title">Platform</div>
+        <a class="foot-link" href="markets.html">Markets</a>
+        <a class="foot-link" href="globe.html">Oracle</a>
+        <a class="foot-link" onclick="openAuth()">Sign up</a>
+        <a class="foot-link" onclick="openAuth()">Sign in</a>
+      </div>
+      <div class="foot-col">
+        <div class="foot-col-title">Company</div>
+        <a class="foot-link">About</a>
+        <a class="foot-link">Silla Capital</a>
+        <a class="foot-link">Careers</a>
+        <a class="foot-link">Contact</a>
+      </div>
+      <div class="foot-col">
+        <div class="foot-col-title">Legal</div>
+        <a class="foot-link">Terms</a>
+        <a class="foot-link">Privacy</a>
+        <a class="foot-link">Responsible Play</a>
+        <a class="foot-link">Licences</a>
+      </div>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <div>© 2026 LNCELOT · Silla Group · Johannesburg, South Africa</div>
+    <div>SIRIUS PROTOCOL v3.0 · BUILT IN AFRICA</div>
+  </div>
+</footer>
+
+<!-- AUTH MODAL -->
+<div id="auth-modal" onclick="if(event.target===this)closeAuth()">
+  <div class="auth-sheet" style="position:relative;">
+    <button class="auth-close" onclick="closeAuth()">×</button>
+    <div class="auth-title" id="auth-title">Get 1,000 Free LP</div>
+    <div class="auth-sub" id="auth-sub">Create your LNCELOT account in 20 seconds. No deposit required. Start predicting instantly.</div>
+    <button class="auth-social">
+      <span style="font-weight:700;">G</span> Continue with Google
+    </button>
+    <button class="auth-social">
+      <span>📱</span> Continue with WhatsApp
+    </button>
+    <div class="auth-divider">OR EMAIL</div>
+    <input type="email" class="auth-input" placeholder="your.email@example.com" id="auth-email">
+    <input type="password" class="auth-input" placeholder="Create password" id="auth-pw">
+    <button class="auth-btn" onclick="submitAuth()">Create Account →</button>
+    <div class="auth-switch">Already have an account? <span onclick="switchAuth()">Sign in</span></div>
+  </div>
+</div>
+
+<script>
+// ── TICKER DATA ──
+const TICKS = [
+  {t:'CHELSEA v ARSENAL',v:'47% YES · SATURDAY 5PM',c:''},
+  {t:'SOWETO DERBY',v:'PIRATES 54% WIN',c:''},
+  {t:'GOLD Q2',v:'$3,218 · 61% ABOVE $3,200',c:'g'},
+  {t:'LOAD SHEDDING',v:'STAGE 2 · 31% STAGE 4+',c:'r'},
+  {t:'SPRINGBOKS',v:'63% BEAT ALL BLACKS',c:''},
+  {t:'SA PETROL',v:'67% PRICE INCREASE MAY',c:'r'},
+  {t:'BITCOIN',v:'$84,200 · 39% ABOVE $100K',c:''},
+  {t:'ZAR/USD',v:'R18.22 · 58% ABOVE R18.50',c:'r'},
+  {t:'ANC ELECTION',v:'62% BELOW 40%',c:'r'},
+  {t:'COBALT DRC',v:'+47% SWARM SIGNAL',c:''},
+  {t:'STRAIT HORMUZ',v:'71% OPEN MONTH END',c:'g'},
+  {t:'BAFANA AFCON',v:'61% QUALIFY 2027',c:''},
+];
+
+function renderTicker(){
+  const tk=document.getElementById('ticker');
+  tk.innerHTML=[...TICKS,...TICKS,...TICKS].map(t=>`<div class="t-item ${t.c}">${t.t} <b>${t.v}</b></div>`).join('');
+}
+renderTicker();
+
+// ── HERO GLOBE (visual only, auto-rotate) ──
+function initHeroGlobe(){
+  const el=document.getElementById('globe-hero');
+  if(!el||typeof Globe==='undefined')return;
+  const globe=Globe()(el)
+    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
+    .backgroundColor('rgba(0,0,0,0)')
+    .atmosphereColor('rgba(0,229,160,0.5)')
+    .atmosphereAltitude(0.18)
+    .width(window.innerWidth)
+    .height(window.innerHeight)
+    .showGraticules(false);
+
+  // Trade arcs - live commodity flows from Africa
+  const arcs=[
+    {srcLat:-11.5,srcLng:26.5,dstLat:31.2,dstLng:121.5,color:'rgba(0,184,255,0.7)'}, // DRC → China
+    {srcLat:-26.2,srcLng:27.8,dstLat:51.5,dstLng:-0.1,color:'rgba(251,191,36,0.6)'}, // SA Gold → London
+    {srcLat:31.5,srcLng:-8.0,dstLat:35.7,dstLng:139.7,color:'rgba(167,139,250,0.5)'}, // Morocco → Japan
+    {srcLat:4.8,srcLng:2.5,dstLat:40.7,dstLng:-74.0,color:'rgba(239,68,68,0.5)'}, // Nigeria Oil → NYC
+    {srcLat:-26.2,srcLng:27.8,dstLat:22.5,dstLng:114.1,color:'rgba(0,229,160,0.6)'}, // SA PGMs → China
+    {srcLat:7.9,srcLng:-1.0,dstLat:52.4,dstLng:4.9,color:'rgba(146,64,14,0.5)'}, // Ghana Cocoa → EU
+    {srcLat:9.1,srcLng:40.5,dstLat:48.9,dstLng:2.4,color:'rgba(120,53,15,0.5)'}, // Ethiopia Coffee → EU
+    {srcLat:-22.0,srcLng:15.0,dstLat:31.2,dstLng:121.5,color:'rgba(74,222,128,0.5)'}, // Namibia Uranium → China
+  ];
+
+  // 54 African capital points
+  const points=[
+    {lat:-26.2,lng:28.0,c:'#00e5a0'},{lat:-33.9,lng:18.4,c:'#00e5a0'},{lat:-29.8,lng:31.0,c:'#00e5a0'},
+    {lat:-11.5,lng:26.5,c:'#a78bfa'},{lat:4.8,lng:2.5,c:'#00b8ff'},{lat:31.5,lng:-8.0,c:'#fbbf24'},
+    {lat:9.1,lng:40.5,c:'#fbbf24'},{lat:-1.3,lng:36.8,c:'#fbbf24'},{lat:7.9,lng:-1.0,c:'#00b8ff'},
+    {lat:-22.0,lng:15.0,c:'#00e5a0'},{lat:-22.3,lng:24.7,c:'#00e5a0'},{lat:-13.1,lng:27.8,c:'#00e5a0'},
+    {lat:-19.0,lng:29.9,c:'#00e5a0'},{lat:-6.4,lng:34.9,c:'#fbbf24'},{lat:-1.9,lng:29.9,c:'#fbbf24'},
+    {lat:1.4,lng:32.3,c:'#fbbf24'},{lat:-18.7,lng:35.5,c:'#fbbf24'},{lat:-18.8,lng:46.9,c:'#fbbf24'},
+    {lat:15.5,lng:18.7,c:'#a78bfa'},{lat:3.9,lng:11.5,c:'#a78bfa'},{lat:-0.8,lng:11.6,c:'#a78bfa'},
+    {lat:14.5,lng:-14.5,c:'#00b8ff'},{lat:10.1,lng:-12.3,c:'#00b8ff'},{lat:17.6,lng:-4.0,c:'#00b8ff'},
+    {lat:26.8,lng:30.8,c:'#fbbf24'},{lat:28.0,lng:1.7,c:'#fbbf24'},{lat:33.9,lng:9.6,c:'#fbbf24'},
+    {lat:9.1,lng:8.7,c:'#00b8ff'},{lat:17.6,lng:8.1,c:'#00b8ff'},{lat:12.4,lng:-1.6,c:'#00b8ff'},
+    {lat:7.5,lng:-5.6,c:'#00b8ff'},{lat:20.3,lng:-10.9,c:'#00b8ff'},{lat:11.8,lng:-15.2,c:'#00b8ff'},
+    {lat:8.5,lng:-11.8,c:'#00b8ff'},{lat:6.4,lng:-9.4,c:'#00b8ff'},{lat:16.0,lng:-24.0,c:'#00b8ff'},
+    {lat:13.4,lng:-15.3,c:'#00b8ff'},{lat:8.6,lng:0.8,c:'#00b8ff'},{lat:9.3,lng:2.3,c:'#00b8ff'},
+    {lat:6.6,lng:20.9,c:'#a78bfa'},{lat:1.7,lng:10.3,c:'#a78bfa'},{lat:-0.2,lng:15.8,c:'#a78bfa'},
+    {lat:0.2,lng:6.6,c:'#a78bfa'},{lat:12.9,lng:30.2,c:'#fbbf24'},{lat:7.9,lng:29.7,c:'#fbbf24'},
+    {lat:15.2,lng:39.8,c:'#fbbf24'},{lat:11.8,lng:42.6,c:'#fbbf24'},{lat:6.1,lng:46.2,c:'#fbbf24'},
+    {lat:-3.4,lng:29.9,c:'#fbbf24'},{lat:-11.6,lng:43.3,c:'#fbbf24'},{lat:-20.3,lng:57.6,c:'#fbbf24'},
+    {lat:-4.7,lng:55.5,c:'#fbbf24'},{lat:-13.3,lng:34.3,c:'#00e5a0'},{lat:-29.6,lng:28.2,c:'#00e5a0'},
+    {lat:-26.5,lng:31.5,c:'#00e5a0'},
+  ];
+
+  globe.pointsData(points)
+    .pointLat('lat').pointLng('lng').pointColor('c')
+    .pointAltitude(0.01).pointRadius(0.3);
+
+  globe.arcsData(arcs)
+    .arcStartLat('srcLat').arcStartLng('srcLng')
+    .arcEndLat('dstLat').arcEndLng('dstLng')
+    .arcColor('color').arcStroke(0.6)
+    .arcDashLength(0.4).arcDashGap(0.2).arcDashAnimateTime(4000);
+
+  globe.controls().autoRotate=true;
+  globe.controls().autoRotateSpeed=0.4;
+  globe.controls().enableZoom=false;
+  globe.controls().enablePan=false;
+  globe.controls().enableRotate=false;
+
+  // Focus on Africa
+  globe.pointOfView({lat:0,lng:20,altitude:2.3},0);
+
+  window.addEventListener('resize',()=>{
+    globe.width(window.innerWidth).height(window.innerHeight);
+  });
+}
+setTimeout(initHeroGlobe,100);
+
+// ── AUTH ──
+let authMode='signup';
+function openAuth(){
+  document.getElementById('auth-modal').classList.add('show');
+}
+function closeAuth(){
+  document.getElementById('auth-modal').classList.remove('show');
+}
+function switchAuth(){
+  authMode=authMode==='signup'?'signin':'signup';
+  if(authMode==='signin'){
+    document.getElementById('auth-title').textContent='Welcome back';
+    document.getElementById('auth-sub').textContent='Sign in to your LNCELOT account.';
+    document.querySelector('.auth-btn').textContent='Sign in →';
+    document.querySelector('.auth-switch').innerHTML='Need an account? <span onclick="switchAuth()">Sign up</span>';
+  }else{
+    document.getElementById('auth-title').textContent='Get 1,000 Free LP';
+    document.getElementById('auth-sub').textContent='Create your LNCELOT account in 20 seconds. No deposit required. Start predicting instantly.';
+    document.querySelector('.auth-btn').textContent='Create Account →';
+    document.querySelector('.auth-switch').innerHTML='Already have an account? <span onclick="switchAuth()">Sign in</span>';
+  }
+}
+function submitAuth(){
+  const email=document.getElementById('auth-email').value;
+  if(!email||!email.includes('@')){alert('Please enter a valid email');return;}
+  // Store session
+  try{
+    localStorage.setItem('lncelot_user',JSON.stringify({email,balance:1000,joined:new Date().toISOString()}));
+  }catch(e){}
+  closeAuth();
+  setTimeout(()=>{location.href='markets.html';},300);
+}
+
+function scrollToSection(id){
+  const el=document.getElementById(id);
+  if(el)el.scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body>
+</html>

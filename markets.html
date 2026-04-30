@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>LNCELOT — Africa's Oracle · Predict Everything</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090f;--surface:#0d1117;--s2:#131820;--s3:#1a2030;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --accent:#00e5a0;--accent2:#00b8ff;--warn:#f59e0b;--red:#ef4444;
+  --gold:#fbbf24;--purple:#a78bfa;
+  --text:#f0f4f8;--dim:#6b7fa3;--muted:#3a4660;
+  --green-bg:rgba(0,229,160,0.08);--green-border:rgba(0,229,160,0.25);
+  --red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.25);
+  --mono:'Share Tech Mono',monospace;--head:'Orbitron',sans-serif;--body:'Inter',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;overflow-x:hidden;}
+
+/* ── LAYOUT ── */
+.shell{display:flex;flex-direction:column;min-height:100vh;max-width:430px;margin:0 auto;position:relative;}
+
+/* ── HEADER ── */
+.hdr{position:sticky;top:0;z-index:50;background:rgba(7,9,15,0.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);padding:10px 16px;
+  display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:var(--head);font-size:15px;font-weight:900;letter-spacing:3px;}
+.logo .l1{color:var(--accent);}
+.logo .l2{color:var(--accent2);}
+.hdr-right{display:flex;align-items:center;gap:10px;}
+.balance-pill{background:var(--s2);border:1px solid var(--border2);border-radius:20px;
+  padding:5px 12px;font-size:12px;font-weight:600;color:var(--accent);font-family:var(--mono);}
+.globe-btn{background:var(--green-bg);border:1px solid var(--green-border);border-radius:8px;
+  padding:6px 10px;font-size:10px;font-weight:600;color:var(--accent);letter-spacing:1px;cursor:pointer;
+  font-family:var(--mono);transition:all 0.15s;}
+.globe-btn:hover{background:rgba(0,229,160,0.15);}
+
+/* ── NAV TABS ── */
+.cat-nav{display:flex;overflow-x:auto;gap:0;padding:0 12px;
+  border-bottom:1px solid var(--border);background:var(--surface);}
+.cat-nav::-webkit-scrollbar{display:none;}
+.cat-tab{flex-shrink:0;padding:10px 14px;font-size:12px;font-weight:500;color:var(--dim);
+  cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.15s;}
+.cat-tab.on{color:var(--accent);border-bottom-color:var(--accent);}
+.cat-tab:hover{color:var(--text);}
+
+/* ── HERO TICKER ── */
+.ticker-wrap{background:var(--s2);border-bottom:1px solid var(--border);
+  padding:6px 0;overflow:hidden;}
+.ticker-inner{display:flex;gap:32px;white-space:nowrap;animation:tck 50s linear infinite;}
+@keyframes tck{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tick{font-family:var(--mono);font-size:10px;color:var(--dim);flex-shrink:0;}
+.tick b{color:var(--accent);}
+.tick.r b{color:var(--red);}
+.tick.g b{color:var(--gold);}
+
+/* ── MARKET CARDS ── */
+.markets{padding:12px;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.section-title{font-size:11px;font-weight:600;color:var(--dim);letter-spacing:1px;text-transform:uppercase;}
+.see-all{font-size:11px;color:var(--accent);cursor:pointer;font-weight:500;}
+.mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:14px;margin-bottom:8px;cursor:pointer;transition:all 0.15s;}
+.mcard:hover{border-color:var(--border2);background:var(--s2);}
+.mcard.featured{border-color:var(--green-border);background:var(--green-bg);}
+.mc-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+.mc-icon{width:36px;height:36px;border-radius:8px;background:var(--s3);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.mc-meta{flex:1;min-width:0;}
+.mc-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:3px;}
+.mc-sub{font-size:11px;color:var(--dim);}
+.mc-badge{font-size:9px;font-weight:600;padding:2px 7px;border-radius:10px;flex-shrink:0;}
+.badge-live{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);}
+.badge-hot{background:rgba(251,191,36,0.12);color:var(--gold);border:1px solid rgba(251,191,36,0.25);}
+.badge-new{background:var(--green-bg);color:var(--accent);border:1px solid var(--green-border);}
+.badge-afr{background:rgba(167,139,250,0.12);color:var(--purple);border:1px solid rgba(167,139,250,0.3);}
+.mc-probs{display:flex;gap:6px;margin-bottom:8px;}
+.prob-yes,.prob-no{flex:1;border-radius:6px;padding:7px 10px;text-align:center;}
+.prob-yes{background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.2);}
+.prob-no{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15);}
+.prob-label{font-size:9px;font-weight:600;letter-spacing:1px;margin-bottom:2px;}
+.prob-yes .prob-label{color:var(--accent);}
+.prob-no .prob-label{color:#f87171;}
+.prob-pct{font-size:16px;font-weight:700;}
+.prob-yes .prob-pct{color:var(--accent);}
+.prob-no .prob-pct{color:#f87171;}
+.prob-bar-wrap{height:4px;background:var(--s3);border-radius:2px;overflow:hidden;margin-bottom:10px;}
+.prob-bar{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 0.5s;}
+.mc-footer{display:flex;align-items:center;justify-content:space-between;}
+.mc-volume{font-size:10px;color:var(--dim);}
+.mc-volume b{color:var(--text);}
+.mc-ends{font-size:10px;color:var(--dim);}
+
+/* ── TRADE BUTTONS (in detail) ── */
+.trade-row{display:flex;gap:8px;margin-top:8px;}
+.trade-btn{flex:1;padding:9px;border-radius:8px;font-size:12px;font-weight:700;
+  cursor:pointer;border:none;letter-spacing:.5px;transition:all 0.15s;font-family:var(--body);}
+.trade-yes{background:var(--accent);color:#000;}
+.trade-no{background:#ef4444;color:#fff;}
+.trade-yes:hover{opacity:0.9;transform:translateY(-1px);}
+.trade-no:hover{opacity:0.9;transform:translateY(-1px);}
+
+/* ── LP BANNER ── */
+.lp-banner{margin:12px 12px 4px;background:linear-gradient(135deg,rgba(0,229,160,0.12),rgba(0,184,255,0.08));
+  border:1px solid var(--green-border);border-radius:12px;padding:12px 14px;
+  display:flex;align-items:center;gap:12px;}
+.lp-icon{font-size:22px;}
+.lp-text{flex:1;}
+.lp-title{font-size:13px;font-weight:600;color:var(--text);}
+.lp-sub{font-size:11px;color:var(--dim);margin-top:1px;}
+.lp-btn{background:var(--accent);color:#000;border:none;border-radius:8px;
+  padding:8px 14px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--body);}
+
+/* ── LEADERBOARD ── */
+.lb-row{display:flex;align-items:center;gap:10px;padding:10px 14px;
+  border-bottom:1px solid var(--border);background:var(--surface);}
+.lb-rank{font-family:var(--mono);font-size:12px;color:var(--dim);width:24px;flex-shrink:0;}
+.lb-rank.top{color:var(--gold);}
+.lb-avatar{width:30px;height:30px;border-radius:50%;background:var(--s3);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+  color:var(--accent);flex-shrink:0;}
+.lb-name{flex:1;font-size:13px;font-weight:500;color:var(--text);}
+.lb-name span{font-size:10px;color:var(--dim);display:block;}
+.lb-pts{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600;}
+.lb-streak{font-size:10px;color:var(--dim);}
+
+/* ── BOTTOM NAV ── */
+.bnav{position:sticky;bottom:0;z-index:50;background:rgba(7,9,15,0.97);
+  backdrop-filter:blur(12px);border-top:1px solid var(--border);
+  display:flex;padding:8px 0 16px;}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  cursor:pointer;padding:4px 0;transition:all 0.15s;}
+.bnav-icon{font-size:18px;opacity:0.5;}
+.bnav-label{font-size:9px;font-weight:500;color:var(--dim);letter-spacing:.5px;}
+.bnav-item.on .bnav-icon{opacity:1;}
+.bnav-item.on .bnav-label{color:var(--accent);}
+
+/* ── GLOBE OVERLAY ── */
+#globe-overlay{display:none;position:fixed;inset:0;z-index:100;
+  background:var(--bg);flex-direction:column;}
+#globe-overlay.show{display:flex;}
+.go-header{padding:12px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;background:var(--surface);}
+.go-back{background:var(--s2);border:1px solid var(--border2);border-radius:8px;
+  padding:6px 12px;font-size:11px;color:var(--accent);cursor:pointer;font-weight:500;}
+.go-title{font-family:var(--head);font-size:13px;color:var(--accent);letter-spacing:2px;}
+.go-frame{flex:1;background:var(--bg);display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:16px;padding:20px;}
+.go-placeholder{text-align:center;}
+.go-placeholder .big{font-family:var(--head);font-size:32px;color:var(--accent);letter-spacing:6px;margin-bottom:8px;}
+.go-placeholder p{font-size:13px;color:var(--dim);line-height:1.7;max-width:300px;}
+.go-markets{padding:12px;overflow-y:auto;}
+.go-market-pill{display:flex;align-items:center;justify-content:space-between;
+  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  padding:10px 12px;margin-bottom:6px;cursor:pointer;}
+.go-pill-label{font-size:12px;font-weight:500;color:var(--text);}
+.go-pill-prob{font-family:var(--mono);font-size:12px;color:var(--accent);}
+
+/* ── STAKE MODAL ── */
+#stake-modal{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);
+  align-items:flex-end;justify-content:center;}
+#stake-modal.show{display:flex;}
+.sm-sheet{background:var(--s2);border-radius:16px 16px 0 0;border:1px solid var(--border2);
+  width:100%;max-width:430px;padding:20px 20px 32px;animation:slideup 0.25s ease;}
+@keyframes slideup{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.sm-handle{width:36px;height:4px;background:var(--muted);border-radius:2px;margin:0 auto 16px;}
+.sm-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.sm-market{font-size:12px;color:var(--dim);margin-bottom:16px;line-height:1.4;}
+.sm-dir{display:flex;gap:8px;margin-bottom:16px;}
+.sm-yes,.sm-no{flex:1;padding:10px;border-radius:8px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all 0.15s;}
+.sm-yes{background:rgba(0,229,160,0.1);border-color:rgba(0,229,160,0.3);color:var(--accent);}
+.sm-no{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:#f87171;}
+.sm-yes.sel{background:rgba(0,229,160,0.25);border-color:var(--accent);}
+.sm-no.sel{background:rgba(239,68,68,0.2);border-color:#ef4444;}
+.sm-dir-label{font-size:10px;font-weight:600;letter-spacing:1px;margin-bottom:2px;}
+.sm-dir-pct{font-size:18px;font-weight:700;}
+.sm-amounts{display:flex;gap:6px;margin-bottom:12px;}
+.sm-amt{flex:1;padding:8px;background:var(--s3);border:1px solid var(--border);border-radius:8px;
+  text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:var(--dim);transition:all 0.15s;}
+.sm-amt.sel{border-color:var(--accent);color:var(--accent);background:var(--green-bg);}
+.sm-input{width:100%;background:var(--s3);border:1px solid var(--border);border-radius:8px;
+  padding:10px 12px;color:var(--text);font-size:14px;font-weight:600;margin-bottom:12px;font-family:var(--mono);}
+.sm-input:focus{outline:none;border-color:var(--accent);}
+.sm-confirm{width:100%;padding:14px;border-radius:10px;font-size:14px;font-weight:700;
+  cursor:pointer;border:none;background:var(--accent);color:#000;font-family:var(--body);}
+.sm-cancel{width:100%;padding:10px;background:transparent;border:none;color:var(--dim);
+  font-size:12px;cursor:pointer;margin-top:6px;font-family:var(--body);}
+
+/* ── VIEWS ── */
+.view{display:none;}
+.view.on{display:block;}
+.portfolio-empty{padding:40px 20px;text-align:center;color:var(--dim);}
+.portfolio-empty .big{font-size:36px;margin-bottom:12px;}
+.perf-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  margin:12px;padding:14px;}
+.perf-row{display:flex;justify-content:space-between;padding:6px 0;
+  border-bottom:1px solid var(--border);font-size:12px;}
+.perf-row:last-child{border:none;}
+.perf-label{color:var(--dim);}
+.perf-val{font-weight:600;color:var(--text);}
+.perf-val.up{color:var(--accent);}
+.perf-val.dn{color:#f87171;}
+
+/* ── SWARM WIDGET ── */
+.swarm-card{background:var(--s2);border:1px solid var(--border);border-radius:12px;
+  margin:12px 12px 4px;padding:14px;overflow:hidden;position:relative;}
+.swarm-canvas{width:100%;height:80px;border-radius:8px;background:var(--s3);margin:8px 0;}
+.swarm-label{font-size:10px;color:var(--dim);font-family:var(--mono);}
+.swarm-status{display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono);}
+.swarm-live{color:var(--accent);}
+.swarm-sigs{color:var(--dim);}
+
+/* Utility */
+.divider{height:1px;background:var(--border);margin:12px 0;}
+.chip{display:inline-block;font-size:9px;padding:2px 6px;border-radius:4px;
+  font-weight:600;letter-spacing:.5px;}
+.chip-afr{background:rgba(167,139,250,0.15);color:var(--purple);}
+.chip-sa{background:var(--green-bg);color:var(--accent);}
+.chip-gl{background:rgba(0,184,255,0.1);color:var(--accent2);}
+</style>
+</head>
+<body>
+
+<!-- GLOBE OVERLAY -->
+<div id="globe-overlay">
+  <div class="go-header">
+    <button class="go-back" onclick="closeGlobe()">← Back</button>
+    <div class="go-title">LNCELOT · AFRICA ORACLE</div>
+  </div>
+  <div class="go-frame">
+    <div class="go-placeholder">
+      <div class="big">LNCELOT</div>
+      <p>The 3D Africa intelligence globe opens here.<br>Click any country to see its active prediction markets, mineral intelligence, and swarm probability signals.</p>
+    </div>
+  </div>
+  <div class="go-markets">
+    <div style="font-size:11px;font-weight:600;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;padding:0 2px">Active Intelligence Markets</div>
+    <div class="go-market-pill" onclick="closeGlobe()"><div class="go-pill-label">🇿🇦 SA load shedding stage — Monday</div><div class="go-pill-prob">Stage 2 · 67%</div></div>
+    <div class="go-market-pill" onclick="closeGlobe()"><div class="go-pill-label">🇨🇩 DRC cobalt output — Q2 beat?</div><div class="go-pill-prob">YES · 54%</div></div>
+    <div class="go-market-pill" onclick="closeGlobe()"><div class="go-pill-label">🌍 Strait of Hormuz — open month end?</div><div class="go-pill-prob">YES · 71%</div></div>
+    <div class="go-market-pill" onclick="closeGlobe()"><div class="go-pill-label">🇬🇧 Brent crude above $90?</div><div class="go-pill-prob">YES · 48%</div></div>
+    <div class="go-market-pill" onclick="closeGlobe()"><div class="go-pill-label">🇿🇦 ANC below 40% next election?</div><div class="go-pill-prob">YES · 62%</div></div>
+    <div class="go-market-pill" onclick="closeGlobe()"><div class="go-pill-label">🇳🇬 Nigeria oil above 1.5M bbl/day?</div><div class="go-pill-prob">NO · 58%</div></div>
+  </div>
+</div>
+
+<!-- STAKE MODAL -->
+<div id="stake-modal" onclick="if(event.target===this)closeStake()">
+  <div class="sm-sheet">
+    <div class="sm-handle"></div>
+    <div class="sm-title" id="sm-title">Place Prediction</div>
+    <div class="sm-market" id="sm-market">—</div>
+    <div class="sm-dir">
+      <div class="sm-yes sel" id="sm-yes" onclick="selDir('yes')">
+        <div class="sm-dir-label">YES</div>
+        <div class="sm-dir-pct" id="sm-yes-pct">—</div>
+      </div>
+      <div class="sm-no" id="sm-no" onclick="selDir('no')">
+        <div class="sm-dir-label">NO</div>
+        <div class="sm-dir-pct" id="sm-no-pct">—</div>
+      </div>
+    </div>
+    <div class="sm-amounts">
+      <div class="sm-amt" onclick="setAmt(20)">R20</div>
+      <div class="sm-amt" onclick="setAmt(50)">R50</div>
+      <div class="sm-amt" onclick="setAmt(100)">R100</div>
+      <div class="sm-amt" onclick="setAmt(500)">R500</div>
+    </div>
+    <input class="sm-input" id="sm-input" type="number" placeholder="Enter amount (R)" min="20" value="100">
+    <button class="sm-confirm" onclick="confirmStake()">CONFIRM PREDICTION</button>
+    <button class="sm-cancel" onclick="closeStake()">Cancel</button>
+  </div>
+</div>
+
+<!-- MAIN SHELL -->
+<div class="shell">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="logo"><span class="l1">LN</span><span class="l2">CE</span><span class="l1">LOT</span></div>
+    <div class="hdr-right">
+      <div class="balance-pill" id="balance-display">1,000 LP</div>
+      <div class="globe-btn" onclick="openGlobe()">GLOBE ↗</div>
+    </div>
+  </div>
+
+  <!-- TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker-inner" id="ticker"></div>
+  </div>
+
+  <!-- CATEGORY TABS -->
+  <div class="cat-nav" id="cat-nav">
+    <div class="cat-tab on" onclick="switchCat('all',this)">🔥 Live</div>
+    <div class="cat-tab" onclick="switchCat('sports',this)">⚽ Sports</div>
+    <div class="cat-tab" onclick="switchCat('politics',this)">🗳 Politics</div>
+    <div class="cat-tab" onclick="switchCat('sa',this)">🇿🇦 SA Intel</div>
+    <div class="cat-tab" onclick="switchCat('commodities',this)">⛏ Minerals</div>
+    <div class="cat-tab" onclick="switchCat('global',this)">🌍 Global</div>
+    <div class="cat-tab" onclick="switchCat('crypto',this)">₿ Crypto</div>
+  </div>
+
+  <!-- VIEWS -->
+  <!-- ALL / HOME -->
+  <div class="view on" id="view-home">
+
+    <!-- LP Banner -->
+    <div class="lp-banner">
+      <div class="lp-icon">🎯</div>
+      <div class="lp-text">
+        <div class="lp-title">1,000 Free Prediction Points</div>
+        <div class="lp-sub">Start predicting — no deposit needed</div>
+      </div>
+      <button class="lp-btn" onclick="openStake(null)">PREDICT</button>
+    </div>
+
+    <!-- Swarm Widget -->
+    <div class="swarm-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div style="font-size:11px;font-weight:600;color:var(--text)">SIRIUS Swarm Engine</div>
+        <div class="chip chip-afr">LIVE</div>
+      </div>
+      <canvas class="swarm-canvas" id="swarm-cv"></canvas>
+      <div class="swarm-status">
+        <div class="swarm-live">● 200 AGENTS ACTIVE</div>
+        <div class="swarm-sigs" id="swarm-sig-display">SIGNALS: 0</div>
+      </div>
+    </div>
+
+    <div class="markets" id="market-list"></div>
+  </div>
+
+  <!-- PORTFOLIO -->
+  <div class="view" id="view-portfolio">
+    <div class="perf-card">
+      <div class="perf-row"><div class="perf-label">Balance</div><div class="perf-val" id="p-balance">1,000 LP</div></div>
+      <div class="perf-row"><div class="perf-label">Active predictions</div><div class="perf-val" id="p-active">0</div></div>
+      <div class="perf-row"><div class="perf-label">Win rate</div><div class="perf-val up" id="p-rate">—</div></div>
+      <div class="perf-row"><div class="perf-label">Total returns</div><div class="perf-val up" id="p-returns">+0 LP</div></div>
+    </div>
+    <div id="portfolio-positions">
+      <div class="portfolio-empty">
+        <div class="big">📊</div>
+        <div style="font-size:13px;color:var(--dim)">No active predictions yet.<br>Place your first prediction to start.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="view" id="view-lb">
+    <div style="padding:12px;font-size:11px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;">Top Predictors · South Africa</div>
+    <div id="lb-list"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bnav">
+    <div class="bnav-item on" id="nav-home" onclick="switchView('home',this)">
+      <div class="bnav-icon">📡</div>
+      <div class="bnav-label">MARKETS</div>
+    </div>
+    <div class="bnav-item" id="nav-portfolio" onclick="switchView('portfolio',this)">
+      <div class="bnav-icon">📊</div>
+      <div class="bnav-label">PORTFOLIO</div>
+    </div>
+    <div class="bnav-item" id="nav-lb" onclick="switchView('lb',this)">
+      <div class="bnav-icon">🏆</div>
+      <div class="bnav-label">LEADERBOARD</div>
+    </div>
+    <div class="bnav-item" onclick="openGlobe()">
+      <div class="bnav-icon">🌍</div>
+      <div class="bnav-label">GLOBE</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+const MARKETS = [
+  // SPORTS — Soccer EPL
+  {id:1,cat:'sports',sub:'Soccer · EPL',icon:'⚽',title:'Chelsea beat Arsenal this weekend?',badge:'live',yesPct:47,volume:'R84.2K',ends:'Sat 5PM',chip:'sa',featured:true},
+  {id:2,cat:'sports',sub:'Soccer · EPL',icon:'⚽',title:'Manchester United win vs Spurs?',badge:'hot',yesPct:38,volume:'R61.5K',ends:'Sun 3PM',chip:'gl'},
+  {id:3,cat:'sports',sub:'Soccer · EPL',icon:'⚽',title:'Arsenal finish top 2 this season?',badge:'hot',yesPct:71,volume:'R112K',ends:'May 25',chip:'gl'},
+  {id:4,cat:'sports',sub:'Soccer · PSL',icon:'⚽',title:'Orlando Pirates beat Chiefs — Soweto Derby?',badge:'live',yesPct:54,volume:'R145K',ends:'Sat 8PM',chip:'sa',featured:true},
+  {id:5,cat:'sports',sub:'Soccer · PSL',icon:'⚽',title:'Sundowns win the PSL title?',badge:'hot',yesPct:82,volume:'R203K',ends:'Jun 1',chip:'sa'},
+  {id:6,cat:'sports',sub:'Soccer · UCL',icon:'⚽',title:'Real Madrid win Champions League?',badge:'hot',yesPct:34,volume:'R88K',ends:'Jun 1',chip:'gl'},
+  {id:7,cat:'sports',sub:'Soccer · AFCON',icon:'⚽',title:'Bafana qualify for AFCON 2027?',badge:'new',yesPct:61,volume:'R44K',ends:'Nov 1',chip:'sa'},
+  {id:8,cat:'sports',sub:'Soccer · Africa',icon:'⚽',title:'Super Eagles win next qualifier?',badge:'hot',yesPct:58,volume:'R37K',ends:'Jun 10',chip:'afr'},
+  // SPORTS — Rugby
+  {id:9,cat:'sports',sub:'Rugby · Test',icon:'🏉',title:'Springboks beat All Blacks next match?',badge:'live',yesPct:63,volume:'R178K',ends:'Sat 5PM',chip:'sa',featured:true},
+  {id:10,cat:'sports',sub:'Rugby · URC',icon:'🏉',title:'Sharks win URC title?',badge:'hot',yesPct:41,volume:'R52K',ends:'Jun 15',chip:'sa'},
+  // SPORTS — Cricket
+  {id:11,cat:'sports',sub:'Cricket · T20',icon:'🏏',title:'Proteas beat India in T20 series?',badge:'live',yesPct:44,volume:'R71K',ends:'Fri 1PM',chip:'sa'},
+  {id:12,cat:'sports',sub:'Cricket · IPL',icon:'🏏',title:'India win IPL 2026?',badge:'hot',yesPct:51,volume:'R94K',ends:'Jun 1',chip:'gl'},
+  {id:13,cat:'sports',sub:'Cricket · IPL',icon:'🏏',title:'MI win more than 8 games?',badge:'new',yesPct:39,volume:'R28K',ends:'May 28',chip:'gl'},
+  // SPORTS — Other
+  {id:14,cat:'sports',sub:'MMA · UFC',icon:'🥊',title:'Jon Jones retains heavyweight title?',badge:'hot',yesPct:67,volume:'R55K',ends:'Apr 26',chip:'gl'},
+  {id:15,cat:'sports',sub:'Tennis · ATP',icon:'🎾',title:'Sinner wins French Open?',badge:'new',yesPct:28,volume:'R33K',ends:'Jun 8',chip:'gl'},
+
+  // POLITICS — SA
+  {id:20,cat:'politics',sub:'SA Politics',icon:'🗳',title:'ANC gets below 40% next national election?',badge:'hot',yesPct:62,volume:'R89K',ends:'2029',chip:'sa',featured:true},
+  {id:21,cat:'politics',sub:'SA Politics',icon:'🗳',title:'DA forms coalition government?',badge:'new',yesPct:44,volume:'R54K',ends:'2029',chip:'sa'},
+  {id:22,cat:'politics',sub:'SA Politics',icon:'🗳',title:'Ramaphosa still SA president Dec 2026?',badge:'live',yesPct:71,volume:'R112K',ends:'Dec 31',chip:'sa'},
+  {id:23,cat:'politics',sub:'SA Politics',icon:'🗳',title:'EFF loses seats in next election?',badge:'new',yesPct:57,volume:'R41K',ends:'2029',chip:'sa'},
+  {id:24,cat:'politics',sub:'SA Politics',icon:'🗳',title:'SA avoids grey list re-addition 2026?',badge:'hot',yesPct:68,volume:'R77K',ends:'Oct 1',chip:'sa'},
+  // POLITICS — Africa
+  {id:25,cat:'politics',sub:'African Politics',icon:'🌍',title:'Nigerian incumbent wins 2027 election?',badge:'new',yesPct:52,volume:'R29K',ends:'Feb 2027',chip:'afr'},
+  {id:26,cat:'politics',sub:'African Politics',icon:'🌍',title:'Zimbabwe opposition coalition formed by 2027?',badge:'new',yesPct:38,volume:'R18K',ends:'2027',chip:'afr'},
+  // POLITICS — Global
+  {id:27,cat:'politics',sub:'US Politics',icon:'🇺🇸',title:'Trump imposes new tariff on African goods?',badge:'hot',yesPct:44,volume:'R63K',ends:'Dec 31',chip:'gl'},
+  {id:28,cat:'politics',sub:'US Politics',icon:'🇺🇸',title:'Trump tweeting about oil before May 1?',badge:'live',yesPct:88,volume:'R31K',ends:'May 1',chip:'gl'},
+  {id:29,cat:'politics',sub:'Global',icon:'🌐',title:'UK general election before year end?',badge:'new',yesPct:23,volume:'R22K',ends:'Dec 31',chip:'gl'},
+
+  // SA INTEL — Load Shedding, Infra
+  {id:30,cat:'sa',sub:'Eskom · Energy',icon:'⚡',title:'Eskom Stage 4 or higher this week?',badge:'live',yesPct:31,volume:'R201K',ends:'Sun midnight',chip:'sa',featured:true},
+  {id:31,cat:'sa',sub:'Eskom · Energy',icon:'⚡',title:'Load shedding hours exceed 10 this week?',badge:'live',yesPct:44,volume:'R156K',ends:'Sun midnight',chip:'sa'},
+  {id:32,cat:'sa',sub:'Fuel · Economy',icon:'⛽',title:'SA petrol price increase next adjustment?',badge:'hot',yesPct:67,volume:'R188K',ends:'May 7',chip:'sa',featured:true},
+  {id:33,cat:'sa',sub:'Ports · Trade',icon:'🚢',title:'Durban port backlog clears before month end?',badge:'new',yesPct:49,volume:'R74K',ends:'Apr 30',chip:'sa'},
+  {id:34,cat:'sa',sub:'ZAR · FX',icon:'💱',title:'Rand above R18.50/USD by month end?',badge:'hot',yesPct:58,volume:'R143K',ends:'Apr 30',chip:'sa'},
+  {id:35,cat:'sa',sub:'JSE · Markets',icon:'📈',title:'JSE All Share up this month?',badge:'live',yesPct:52,volume:'R97K',ends:'Apr 30',chip:'sa'},
+  {id:36,cat:'sa',sub:'SA Economy',icon:'📊',title:'SA inflation beat forecast this quarter?',badge:'new',yesPct:41,volume:'R55K',ends:'Jun 30',chip:'sa'},
+  {id:37,cat:'sa',sub:'Green Corridor',icon:'🔌',title:'Green T network: 10 nodes active by June?',badge:'new',yesPct:74,volume:'R38K',ends:'Jun 30',chip:'sa'},
+
+  // COMMODITIES / MINERALS
+  {id:40,cat:'commodities',sub:'Gold · Metals',icon:'🥇',title:'Gold above $3,200/oz end of Q2?',badge:'hot',yesPct:61,volume:'R221K',ends:'Jun 30',chip:'sa',featured:true},
+  {id:41,cat:'commodities',sub:'Cobalt · EV',icon:'⛏',title:'Cobalt spot price +5% this month?',badge:'live',yesPct:47,volume:'R89K',ends:'Apr 30',chip:'afr'},
+  {id:42,cat:'commodities',sub:'Platinum · PGM',icon:'💎',title:'Platinum recovers above $1,000/oz?',badge:'hot',yesPct:39,volume:'R112K',ends:'Jun 30',chip:'sa'},
+  {id:43,cat:'commodities',sub:'Agriculture · SA',icon:'🌽',title:'SA maize crop yield beat USDA forecast?',badge:'new',yesPct:54,volume:'R67K',ends:'Jul 1',chip:'sa'},
+  {id:44,cat:'commodities',sub:'Agriculture · Africa',icon:'☕',title:'Kenya AA coffee above $3.50/lb?',badge:'new',yesPct:66,volume:'R43K',ends:'Jun 1',chip:'afr'},
+  {id:45,cat:'commodities',sub:'Agriculture · Africa',icon:'🍫',title:'Cocoa price peaks this season?',badge:'hot',yesPct:58,volume:'R71K',ends:'Sep 1',chip:'afr'},
+  {id:46,cat:'commodities',sub:'Oil · Energy',icon:'🛢',title:'Brent crude above $90 by month end?',badge:'hot',yesPct:48,volume:'R188K',ends:'Apr 30',chip:'gl'},
+  {id:47,cat:'commodities',sub:'Minerals · DRC',icon:'⛏',title:'DRC cobalt export volume up Q2?',badge:'live',yesPct:54,volume:'R58K',ends:'Jun 30',chip:'afr'},
+
+  // GLOBAL
+  {id:50,cat:'global',sub:'Geopolitical',icon:'🌊',title:'Strait of Hormuz fully open by month end?',badge:'live',yesPct:71,volume:'R341K',ends:'Apr 30',chip:'gl',featured:true},
+  {id:51,cat:'global',sub:'Oil · Trade',icon:'🛢',title:'Global oil above $100 before June?',badge:'hot',yesPct:34,volume:'R211K',ends:'Jun 1',chip:'gl'},
+  {id:52,cat:'global',sub:'Trade · Ships',icon:'🚢',title:'Suez Canal transit recovers +10% WoW?',badge:'live',yesPct:62,volume:'R87K',ends:'Apr 30',chip:'gl'},
+  {id:53,cat:'global',sub:'US Economy',icon:'🇺🇸',title:'Fed cuts rates at May meeting?',badge:'hot',yesPct:28,volume:'R154K',ends:'May 7',chip:'gl'},
+  {id:54,cat:'global',sub:'Trade · Africa',icon:'🌍',title:'Simandou iron ore project: commercial production before 2028?',badge:'new',yesPct:43,volume:'R44K',ends:'Dec 31 2027',chip:'afr'},
+  {id:55,cat:'global',sub:'Media · SA',icon:'🎵',title:'SA artist wins international award 2026?',badge:'new',yesPct:69,volume:'R33K',ends:'Dec 31',chip:'sa'},
+
+  // CRYPTO
+  {id:60,cat:'crypto',sub:'Bitcoin',icon:'₿',title:'Bitcoin above $100K by June 30?',badge:'hot',yesPct:39,volume:'R445K',ends:'Jun 30',chip:'gl',featured:true},
+  {id:61,cat:'crypto',sub:'Ethereum',icon:'Ξ',title:'ETH above $3,500 this month?',badge:'hot',yesPct:42,volume:'R187K',ends:'Apr 30',chip:'gl'},
+  {id:62,cat:'crypto',sub:'SA Crypto',icon:'₿',title:'SA crypto adoption index up Q2?',badge:'new',yesPct:71,volume:'R29K',ends:'Jun 30',chip:'sa'},
+  {id:63,cat:'crypto',sub:'DeFi',icon:'🔗',title:'Solana flips ETH in daily transactions?',badge:'new',yesPct:34,volume:'R88K',ends:'Dec 31',chip:'gl'},
+];
+
+const LEADERBOARD = [
+  {name:'TheboMashaba',city:'Johannesburg',pts:14820,streak:12,correct:87},
+  {name:'CapeTownOracle',city:'Cape Town',pts:12440,streak:8,correct:81},
+  {name:'DurbanPredictor',city:'Durban',pts:11230,streak:15,correct:79},
+  {name:'JoziTrader',city:'Soweto',pts:9870,streak:6,correct:76},
+  {name:'SpringbokFan99',city:'Pretoria',pts:8990,streak:4,correct:74},
+  {name:'MineralsMaven',city:'Johannesburg',pts:7450,streak:9,correct:72},
+  {name:'LoadSheddingExpert',city:'Ekurhuleni',pts:6880,streak:3,correct:71},
+  {name:'ZARWatcher',city:'Cape Town',pts:5920,streak:7,correct:69},
+];
+
+const TICKS = [
+  {t:'CHELSEA v ARSENAL',v:'47% YES · SATURDAY',c:''},
+  {t:'BRENT OIL',v:'$87.40 · 48% ABOVE $90',c:'g'},
+  {t:'LOAD SHEDDING',v:'STAGE 2 · 31% STAGE 4+',c:'r'},
+  {t:'GOLD',v:'$3,218 · 61% ABOVE $3,200 Q2',c:'g'},
+  {t:'SPRINGBOKS',v:'63% WIN vs ALL BLACKS',c:''},
+  {t:'BITCOIN',v:'$84,200 · 39% ABOVE $100K',c:''},
+  {t:'COBALT DRC',v:'+47% SWARM SIGNAL',c:''},
+  {t:'ZAR/USD',v:'R18.22 · 58% ABOVE R18.50',c:'r'},
+  {t:'ANC ELECTION',v:'62% BELOW 40%',c:'r'},
+  {t:'SOWETO DERBY',v:'PIRATES 54% WIN',c:''},
+  {t:'STRAIT HORMUZ',v:'71% OPEN MONTH END',c:'g'},
+  {t:'SA PETROL',v:'67% PRICE INCREASE MAY',c:'r'},
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let balance = 1000;
+let currentCat = 'all';
+let positions = [];
+let wins = 0;
+let predictions = 0;
+let stakeMarket = null;
+let stakeDir = 'yes';
+let swarmSignals = 0;
+
+// ── RENDER ──────────────────────────────────────────────────────────────────
+function getMarkets(cat){
+  if(cat==='all') return MARKETS.filter(m=>m.featured||m.badge==='live').slice(0,12);
+  return MARKETS.filter(m=>m.cat===cat);
+}
+
+function chipColor(c){
+  if(c==='sa') return 'chip-sa';
+  if(c==='afr') return 'chip-afr';
+  return 'chip-gl';
+}
+function chipLabel(c){
+  if(c==='sa') return '🇿🇦 SA';
+  if(c==='afr') return '🌍 AFRICA';
+  return '🌐 GLOBAL';
+}
+
+function badgeHtml(b){
+  const map={live:'badge-live',hot:'badge-hot',new:'badge-new',afr:'badge-afr'};
+  const labels={live:'● LIVE',hot:'🔥 HOT',new:'✦ NEW',afr:'🌍'};
+  return `<span class="mc-badge ${map[b]||''}">${labels[b]||b.toUpperCase()}</span>`;
+}
+
+function renderMarkets(){
+  const markets = getMarkets(currentCat);
+  const list = document.getElementById('market-list');
+  if(!list) return;
+  let header = currentCat==='all' ? 'Live & Featured Markets' :
+    {sports:'Sports Markets',politics:'Politics Markets',sa:'South Africa Intelligence',
+     commodities:'Minerals & Commodities',global:'Global Events',crypto:'Crypto Markets'}[currentCat]||'Markets';
+
+  list.innerHTML = `<div class="section-header">
+    <div class="section-title">${header}</div>
+    <div class="see-all">${markets.length} markets →</div>
+  </div>` +
+  markets.map(m=>`
+    <div class="mcard${m.featured?' featured':''}" onclick="openStake(${m.id})">
+      <div class="mc-top">
+        <div class="mc-icon">${m.icon}</div>
+        <div class="mc-meta">
+          <div class="mc-title">${m.title}</div>
+          <div class="mc-sub">${m.sub} · <span class="chip ${chipColor(m.chip)}">${chipLabel(m.chip)}</span></div>
+        </div>
+        ${badgeHtml(m.badge)}
+      </div>
+      <div class="mc-probs">
+        <div class="prob-yes">
+          <div class="prob-label">YES</div>
+          <div class="prob-pct">${m.yesPct}%</div>
+        </div>
+        <div class="prob-no">
+          <div class="prob-label">NO</div>
+          <div class="prob-pct">${100-m.yesPct}%</div>
+        </div>
+      </div>
+      <div class="prob-bar-wrap"><div class="prob-bar" style="width:${m.yesPct}%"></div></div>
+      <div class="mc-footer">
+        <div class="mc-volume">Vol: <b>${m.volume}</b></div>
+        <div class="mc-ends">Closes: ${m.ends}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderLeaderboard(){
+  const lb = document.getElementById('lb-list');
+  if(!lb) return;
+  lb.innerHTML = LEADERBOARD.map((u,i)=>`
+    <div class="lb-row">
+      <div class="lb-rank ${i<3?'top':''}">#${i+1}</div>
+      <div class="lb-avatar">${u.name[0]}</div>
+      <div class="lb-name">${u.name}<span>${u.city} · ${u.correct}% correct</span></div>
+      <div class="lb-pts">${u.pts.toLocaleString()} LP</div>
+      <div class="lb-streak">🔥${u.streak}</div>
+    </div>
+  `).join('');
+}
+
+function renderTicker(){
+  const tk = document.getElementById('ticker');
+  if(!tk) return;
+  const items = [...TICKS,...TICKS].map(t=>`<div class="tick ${t.c}">${t.t} <b>${t.v}</b></div>`).join('');
+  tk.innerHTML = items;
+}
+
+// ── SWITCHING ──────────────────────────────────────────────────────────────
+function switchCat(cat, el){
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  switchView('home', document.getElementById('nav-home'));
+  renderMarkets();
+}
+
+function switchView(view, el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('on'));
+  document.getElementById('view-'+view).classList.add('on');
+  if(el) el.classList.add('on');
+  if(view==='lb') renderLeaderboard();
+  updatePortfolio();
+}
+
+// ── GLOBE ──────────────────────────────────────────────────────────────────
+function openGlobe(){ document.getElementById('globe-overlay').classList.add('show'); }
+function closeGlobe(){ document.getElementById('globe-overlay').classList.remove('show'); }
+
+// ── STAKE ──────────────────────────────────────────────────────────────────
+function openStake(id){
+  const m = id ? MARKETS.find(x=>x.id===id) : MARKETS[0];
+  if(!m) return;
+  stakeMarket = m;
+  stakeDir = 'yes';
+  document.getElementById('sm-title').textContent = 'Place Prediction';
+  document.getElementById('sm-market').textContent = m.title;
+  document.getElementById('sm-yes-pct').textContent = m.yesPct+'%';
+  document.getElementById('sm-no-pct').textContent = (100-m.yesPct)+'%';
+  document.getElementById('sm-input').value = 100;
+  document.getElementById('sm-yes').classList.add('sel');
+  document.getElementById('sm-no').classList.remove('sel');
+  document.querySelectorAll('.sm-amt').forEach(a=>a.classList.remove('sel'));
+  document.getElementById('stake-modal').classList.add('show');
+}
+
+function closeStake(){ document.getElementById('stake-modal').classList.remove('show'); }
+
+function selDir(dir){
+  stakeDir = dir;
+  document.getElementById('sm-yes').classList.toggle('sel', dir==='yes');
+  document.getElementById('sm-no').classList.toggle('sel', dir==='no');
+}
+
+function setAmt(amt){
+  document.getElementById('sm-input').value = amt;
+  document.querySelectorAll('.sm-amt').forEach(a=>a.classList.remove('sel'));
+  event.target.classList.add('sel');
+}
+
+function confirmStake(){
+  const amt = parseInt(document.getElementById('sm-input').value)||100;
+  if(amt < 20){ alert('Minimum prediction: R20'); return; }
+  if(amt > balance){ alert('Insufficient balance'); return; }
+  balance -= amt;
+  predictions++;
+  const pos = {
+    market: stakeMarket.title,
+    dir: stakeDir,
+    amt,
+    pct: stakeDir==='yes' ? stakeMarket.yesPct : 100-stakeMarket.yesPct,
+    id: stakeMarket.id,
+    time: new Date().toLocaleTimeString()
+  };
+  positions.push(pos);
+  document.getElementById('balance-display').textContent = balance.toLocaleString()+' LP';
+  closeStake();
+  updatePortfolio();
+  showToast(`Prediction placed! ${stakeDir.toUpperCase()} on "${stakeMarket.title.substring(0,40)}..."`);
+}
+
+function updatePortfolio(){
+  document.getElementById('p-balance').textContent = balance.toLocaleString()+' LP';
+  document.getElementById('p-active').textContent = positions.length;
+  document.getElementById('p-rate').textContent = predictions>0 ? Math.round((wins/Math.max(predictions,1))*100)+'%' : '—';
+  document.getElementById('p-returns').textContent = '+0 LP';
+  if(positions.length===0) return;
+  const pp = document.getElementById('portfolio-positions');
+  pp.innerHTML = '<div style="padding:12px">'+
+    positions.map(p=>`
+      <div class="mcard" style="margin-bottom:8px">
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px">${p.market.substring(0,60)}</div>
+        <div style="display:flex;justify-content:space-between;font-size:11px">
+          <span style="color:${p.dir==='yes'?'var(--accent)':'#f87171'};font-weight:700">${p.dir.toUpperCase()} · ${p.pct}%</span>
+          <span style="color:var(--dim)">R${p.amt} staked</span>
+          <span style="color:var(--dim)">${p.time}</span>
+        </div>
+      </div>
+    `).join('')+'</div>';
+}
+
+function showToast(msg){
+  const t = document.createElement('div');
+  t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--accent);color:#000;padding:10px 16px;border-radius:8px;font-size:12px;font-weight:700;z-index:300;white-space:nowrap;animation:fadeInOut 2.5s forwards;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  const style = document.createElement('style');
+  style.textContent='@keyframes fadeInOut{0%{opacity:0;transform:translateX(-50%) translateY(10px)}15%{opacity:1;transform:translateX(-50%) translateY(0)}85%{opacity:1}100%{opacity:0}}';
+  document.head.appendChild(style);
+  setTimeout(()=>t.remove(), 2600);
+}
+
+// ── SWARM ANIMATION ──────────────────────────────────────────────────────
+function initSwarm(){
+  const cv = document.getElementById('swarm-cv');
+  if(!cv) return;
+  const ctx = cv.getContext('2d');
+  cv.width = cv.offsetWidth;
+  cv.height = 80;
+  const agents = Array.from({length:60},()=>({
+    x:(0.2+Math.random()*0.6)*cv.width,
+    y:Math.random()*cv.height,
+    vx:(Math.random()-0.5)*1.5,vy:(Math.random()-0.5)*1.5,
+    type:Math.floor(Math.random()*4),tx:false,txT:0
+  }));
+  const colors=['rgba(0,229,160,','rgba(0,184,255,','rgba(167,139,250,','rgba(251,191,36,'];
+  function step(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    agents.forEach(a=>{
+      agents.forEach(b=>{
+        if(a===b) return;
+        const dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<20){a.vx+=dx/d*0.1;a.vy+=dy/d*0.1;}
+        if(d<60){a.vx+=b.vx*0.02;a.vy+=b.vy*0.02;}
+        if(d<6&&!a.tx&&a.type!==b.type){a.tx=true;a.txT=30;swarmSignals++;
+          document.getElementById('swarm-sig-display').textContent='SIGNALS: '+swarmSignals;}
+      });
+      const cx=cv.width*0.5,cy=cv.height*0.5;
+      a.vx+=(cx-a.x)*0.001;a.vy+=(cy-a.y)*0.001;
+      const spd=Math.sqrt(a.vx*a.vx+a.vy*a.vy);
+      if(spd>2){a.vx=a.vx/spd*2;a.vy=a.vy/spd*2;}
+      a.x+=a.vx;a.y+=a.vy;
+      if(a.x<0||a.x>cv.width){a.vx*=-1;}
+      if(a.y<0||a.y>cv.height){a.vy*=-1;}
+      if(a.tx){a.txT--;if(a.txT<=0)a.tx=false;}
+      const alpha=a.tx?0.9:0.55;
+      ctx.beginPath();ctx.arc(a.x,a.y,a.tx?4:2.5,0,Math.PI*2);
+      ctx.fillStyle=colors[a.type]+alpha+')';ctx.fill();
+      if(a.tx){
+        ctx.beginPath();ctx.arc(a.x,a.y,8,0,Math.PI*2);
+        ctx.strokeStyle=colors[a.type]+'0.3)';ctx.lineWidth=1;ctx.stroke();
+      }
+    });
+    requestAnimationFrame(step);
+  }
+  step();
+}
+
+// ── LIVE PRICE FLICKER ──────────────────────────────────────────────────────
+setInterval(()=>{
+  MARKETS.forEach(m=>{
+    const delta = (Math.random()-0.498)*2;
+    m.yesPct = Math.max(5, Math.min(95, m.yesPct+delta));
+    m.yesPct = Math.round(m.yesPct*10)/10;
+  });
+  const visible = document.querySelectorAll('.prob-pct');
+  const bars = document.querySelectorAll('.prob-bar');
+  let i=0;
+  getMarkets(currentCat).forEach(m=>{
+    if(visible[i*2]) visible[i*2].textContent=Math.round(m.yesPct)+'%';
+    if(visible[i*2+1]) visible[i*2+1].textContent=Math.round(100-m.yesPct)+'%';
+    if(bars[i]) bars[i].style.width=m.yesPct+'%';
+    i++;
+  });
+},3000);
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+renderTicker();
+renderMarkets();
+setTimeout(initSwarm, 200);
+</script>
+</body>
+</html>

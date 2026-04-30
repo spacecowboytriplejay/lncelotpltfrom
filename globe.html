@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LNCELOT Oracle — Africa Intelligence Globe · SIRIUS Protocol</title>
+<script src="https://unpkg.com/globe.gl@2.27.1/dist/globe.gl.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#03060c;--panel:rgba(7,11,20,0.94);--s2:#0d1117;--s3:#131820;
+  --border:rgba(0,200,150,0.13);--border2:rgba(255,255,255,0.08);
+  --accent:#00e5a0;--accent2:#00b8ff;--warn:#f59e0b;--red:#ef4444;
+  --gold:#fbbf24;--purple:#a78bfa;
+  --text:#e8eef5;--dim:rgba(232,238,245,0.55);--muted:rgba(232,238,245,0.3);
+  --mono:'Share Tech Mono',monospace;--head:'Orbitron',sans-serif;--body:'Inter',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;font-family:var(--body);color:var(--text);}
+
+#globe-container{position:absolute;inset:0;z-index:1;}
+#swarm-canvas{position:fixed;inset:0;z-index:2;pointer-events:none;}
+#crt{position:fixed;inset:0;z-index:3;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px);}
+
+/* ── HEADER ── */
+#hdr{position:fixed;top:0;left:0;right:0;z-index:25;height:52px;
+  background:linear-gradient(180deg,rgba(3,6,12,0.98),rgba(3,6,12,0.7));
+  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 16px;backdrop-filter:blur(10px);}
+.logo{font-family:var(--head);font-size:16px;font-weight:900;letter-spacing:5px;cursor:pointer;flex-shrink:0;}
+.logo .l1{color:var(--accent);}.logo .l2{color:var(--accent2);}
+.logo-sub{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:2px;margin-top:-2px;}
+.hd{width:1px;height:26px;background:var(--border);}
+.stat{font-family:var(--mono);font-size:9px;color:var(--dim);display:flex;align-items:center;gap:5px;}
+.stat b{color:var(--accent);}
+.dot{width:6px;height:6px;border-radius:50%;animation:pulse 2s infinite;}
+.dot.g{background:var(--accent);box-shadow:0 0 8px var(--accent);}
+.dot.w{background:var(--warn);}
+.dot.r{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.clk{font-family:var(--mono);font-size:11px;color:var(--accent);}
+.hdr-btn{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;padding:5px 10px;
+  border:1px solid var(--border2);color:var(--dim);background:transparent;
+  cursor:pointer;border-radius:6px;transition:all 0.15s;font-weight:500;}
+.hdr-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,160,0.08);}
+.hdr-btn.primary{background:var(--accent);color:#000;border-color:var(--accent);}
+.hdr-btn.primary:hover{background:#00c88a;}
+
+/* ── REGION BAR ── */
+#regions{position:fixed;top:62px;left:50%;transform:translateX(-50%);z-index:24;
+  display:flex;gap:4px;background:var(--panel);border:1px solid var(--border);
+  border-radius:10px;padding:4px;backdrop-filter:blur(10px);}
+.rbtn{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;padding:5px 10px;
+  border:none;background:transparent;color:var(--dim);
+  cursor:pointer;border-radius:6px;transition:all 0.15s;font-weight:500;}
+.rbtn:hover{color:var(--text);}
+.rbtn.on{background:rgba(0,229,160,0.15);color:var(--accent);}
+
+/* ── LEFT CONTROL PANEL ── */
+#lp{position:fixed;top:110px;left:12px;z-index:20;width:220px;
+  background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  padding:14px;backdrop-filter:blur(12px);}
+.lp-title{font-family:var(--head);font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.lp-sec{margin-bottom:12px;}
+.lp-lbl{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:2px;margin-bottom:5px;text-transform:uppercase;}
+.lp-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:11px;}
+.lp-row input[type="checkbox"]{accent-color:var(--accent);cursor:pointer;}
+.lp-row label{color:var(--text);cursor:pointer;flex:1;}
+.lp-count{font-family:var(--mono);font-size:9px;color:var(--dim);}
+.lp-btn{width:100%;padding:6px 10px;font-family:var(--mono);font-size:9px;letter-spacing:1.5px;
+  background:rgba(0,229,160,0.1);color:var(--accent);border:1px solid rgba(0,229,160,0.3);
+  border-radius:6px;cursor:pointer;transition:all 0.15s;font-weight:600;margin-top:6px;}
+.lp-btn:hover{background:rgba(0,229,160,0.18);}
+
+/* ── RIGHT INTELLIGENCE PANEL ── */
+#rp{position:fixed;top:52px;right:0;bottom:36px;z-index:20;width:320px;
+  background:var(--panel);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;backdrop-filter:blur(12px);transition:transform 0.25s ease;}
+#rp.collapsed{transform:translateX(300px);}
+.rp-toggle{position:absolute;top:50%;left:-28px;transform:translateY(-50%);
+  background:var(--panel);border:1px solid var(--border);border-right:none;
+  width:28px;height:40px;border-radius:8px 0 0 8px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:14px;}
+
+/* Country header */
+.rp-hero{padding:14px 16px;border-bottom:1px solid var(--border);}
+.rp-country{font-family:var(--head);font-size:16px;color:var(--accent);letter-spacing:1.5px;}
+.rp-gdp{font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:3px;letter-spacing:1px;}
+
+/* Tabs */
+.rp-tabs{display:flex;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;}
+.rp-tabs::-webkit-scrollbar{display:none;}
+.rp-tab{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;padding:9px 11px;
+  color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;
+  white-space:nowrap;transition:all 0.15s;flex-shrink:0;font-weight:600;}
+.rp-tab.on{color:var(--accent);border-bottom-color:var(--accent);}
+.rp-tab:hover{color:var(--text);}
+
+/* Content area */
+.rp-content{flex:1;overflow-y:auto;padding:12px 14px;}
+.rp-content::-webkit-scrollbar{width:3px;}
+.rp-content::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* Panes */
+.pane{display:none;}
+.pane.on{display:block;}
+
+/* Data rows */
+.sec-label{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:2px;margin:10px 0 6px;text-transform:uppercase;}
+.sec-label:first-child{margin-top:0;}
+.dr{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(0,229,160,0.06);}
+.dr:last-child{border:none;}
+.dr-ico{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dr-name{font-size:12px;color:var(--text);flex:1;}
+.dr-val{font-family:var(--mono);font-size:10px;color:var(--dim);}
+.tag{display:inline-block;font-family:var(--mono);font-size:8px;padding:2px 6px;border-radius:3px;margin-left:auto;font-weight:600;}
+.tag-min{background:rgba(251,191,36,0.12);color:var(--gold);}
+.tag-agr{background:rgba(0,229,160,0.1);color:var(--accent);}
+.tag-log{background:rgba(0,184,255,0.1);color:var(--accent2);}
+.tag-red{background:rgba(239,68,68,0.12);color:#f87171;}
+
+.metric{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:6px;}
+.m-val{font-family:var(--head);font-size:18px;color:var(--accent);font-weight:700;}
+.m-lbl{font-family:var(--mono);font-size:8px;color:var(--dim);margin-top:2px;letter-spacing:1.5px;text-transform:uppercase;}
+
+/* Market pill */
+.market-pill{background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  padding:10px 12px;margin-bottom:6px;cursor:pointer;transition:all 0.15s;}
+.market-pill:hover{border-color:var(--accent);transform:translateY(-1px);}
+.mp-title{font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px;line-height:1.3;}
+.mp-bottom{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:9px;}
+.mp-prob{color:var(--accent);font-weight:600;}
+.mp-vol{color:var(--dim);}
+
+/* Feed items */
+.feed-item{background:var(--s2);border-left:2px solid var(--accent);border-radius:0 6px 6px 0;
+  padding:8px 10px;margin-bottom:6px;}
+.feed-item.r{border-left-color:var(--red);}
+.feed-item.w{border-left-color:var(--warn);}
+.feed-item.p{border-left-color:var(--purple);}
+.fi-time{font-family:var(--mono);font-size:9px;color:var(--dim);margin-bottom:3px;}
+.fi-text{font-size:11px;color:var(--text);line-height:1.5;}
+.fi-tag{display:inline-block;font-family:var(--mono);font-size:8px;padding:1px 5px;border-radius:3px;margin-top:4px;font-weight:600;}
+
+/* Price ticker rows */
+.price-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.pr-name{font-size:11px;color:var(--text);}
+.pr-name small{color:var(--dim);font-size:10px;margin-left:4px;}
+.pr-val{font-family:var(--mono);font-size:11px;color:var(--text);}
+.pr-chg{font-family:var(--mono);font-size:9px;margin-left:6px;}
+.pr-chg.up{color:var(--accent);}
+.pr-chg.dn{color:#f87171;}
+
+/* Swarm readout */
+.swarm-readout{background:linear-gradient(135deg,rgba(167,139,250,0.08),rgba(0,229,160,0.05));
+  border:1px solid rgba(167,139,250,0.2);border-radius:8px;padding:10px 12px;margin-bottom:10px;}
+.sr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.sr-title{font-family:var(--head);font-size:10px;color:var(--purple);letter-spacing:2px;font-weight:700;}
+.sr-live{font-family:var(--mono);font-size:8px;color:var(--accent);display:flex;align-items:center;gap:4px;}
+.sr-val{font-family:var(--head);font-size:22px;color:var(--text);font-weight:700;}
+.sr-lbl{font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:1.5px;margin-top:2px;}
+
+/* Trade buttons */
+.trade-btn{width:100%;padding:10px;font-family:var(--body);font-size:12px;
+  background:var(--accent);color:#000;border:none;border-radius:8px;
+  cursor:pointer;font-weight:700;margin-top:10px;letter-spacing:.3px;transition:all 0.15s;}
+.trade-btn:hover{background:#00c88a;transform:translateY(-1px);}
+
+/* ── BOTTOM TICKER ── */
+#bb{position:fixed;bottom:0;left:0;right:0;z-index:20;height:36px;
+  background:var(--panel);border-top:1px solid var(--border);
+  display:flex;align-items:center;overflow:hidden;backdrop-filter:blur(10px);}
+.bl{font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:3px;
+  padding:0 14px;border-right:1px solid var(--border);flex-shrink:0;font-weight:600;}
+.ttrack{flex:1;overflow:hidden;}
+.tinner{display:flex;gap:36px;white-space:nowrap;animation:tck 80s linear infinite;}
+@keyframes tck{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ti{font-family:var(--mono);font-size:9px;color:var(--dim);flex-shrink:0;}
+.ti b{color:var(--accent);}
+.ti.r b{color:#f87171;}.ti.g b{color:var(--gold);}.ti.p b{color:var(--purple);}
+
+/* ── BOOT ── */
+#boot{position:fixed;inset:0;z-index:100;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  animation:bo 0.4s ease 3s forwards;}
+@keyframes bo{to{opacity:0;pointer-events:none;visibility:hidden;}}
+.bl-logo{font-family:var(--head);font-size:56px;font-weight:900;color:var(--accent);letter-spacing:12px;text-shadow:0 0 60px rgba(0,229,160,0.5);}
+.bl-logo em{color:var(--accent2);font-style:normal;}
+.bline{width:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);margin:22px auto;animation:bline 2.3s ease forwards;}
+@keyframes bline{to{width:280px}}
+.bc{display:inline-block;width:7px;height:11px;background:var(--accent);margin-left:3px;animation:blnk 0.7s infinite;vertical-align:middle;}
+@keyframes blnk{50%{opacity:0}}
+
+/* ── MOBILE ── */
+@media(max-width:900px){
+  #rp{width:100%;height:60vh;top:auto;bottom:36px;border-left:none;border-top:1px solid var(--border);}
+  #rp.collapsed{transform:translateY(calc(100% - 44px));}
+  .rp-toggle{top:-28px;left:50%;transform:translateX(-50%);width:40px;height:28px;border-radius:8px 8px 0 0;border:1px solid var(--border);border-bottom:none;}
+  #lp{display:none;}
+  #regions{top:58px;}
+  .rbtn{padding:5px 8px;font-size:8px;}
+}
+</style>
+</head>
+<body>
+
+<!-- BOOT -->
+<div id="boot">
+  <div class="bl-logo">LN<em>CE</em>LOT</div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:4px;margin-top:10px;">AFRICA ORACLE · SIRIUS PROTOCOL v3.0</div>
+  <div class="bline"></div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--dim);">INITIALISING INTELLIGENCE LAYER · 54 NATIONS<span class="bc"></span></div>
+</div>
+
+<div id="crt"></div>
+<canvas id="swarm-canvas"></canvas>
+<div id="globe-container"></div>
+
+<!-- HEADER -->
+<div id="hdr">
+  <div>
+    <div class="logo" onclick="location.href='index.html'"><span class="l1">LN</span><span class="l2">CE</span><span class="l1">LOT</span></div>
+    <div class="logo-sub">AFRICA ORACLE · ALL-SEEING EYE</div>
+  </div>
+  <div class="hd"></div>
+  <div class="stat"><div class="dot g"></div>54 NATIONS <b>LIVE</b></div>
+  <div class="stat"><div class="dot g"></div>AGENTS <b id="ag-count">200</b></div>
+  <div class="stat"><div class="dot w"></div>SIGNALS <b id="sig-count">0</b></div>
+  <div class="stat"><div class="dot r"></div>CRITICAL <b>2</b></div>
+  <div class="hdr-r">
+    <div class="clk" id="clk">--:--:-- UTC</div>
+    <button class="hdr-btn" onclick="location.href='markets.html'">MARKETS ↗</button>
+    <button class="hdr-btn primary" onclick="location.href='index.html'">HOME</button>
+  </div>
+</div>
+
+<!-- REGION BAR -->
+<div id="regions">
+  <button class="rbtn" onclick="flyTo(10,10,1.5,this)">GLOBAL</button>
+  <button class="rbtn on" onclick="flyTo(0,20,2.5,this)">AFRICA</button>
+  <button class="rbtn" onclick="flyTo(-28,25,4,this)">S.AFRICA</button>
+  <button class="rbtn" onclick="flyTo(8,0,3.5,this)">W.AFRICA</button>
+  <button class="rbtn" onclick="flyTo(0,36,3.5,this)">E.AFRICA</button>
+  <button class="rbtn" onclick="flyTo(-4,23,3.5,this)">CENTRAL</button>
+  <button class="rbtn" onclick="flyTo(26,20,3.5,this)">N.AFRICA</button>
+  <button class="rbtn" onclick="flyGreent()">GREEN T ⚡</button>
+</div>
+
+<!-- LEFT CONTROL PANEL -->
+<div id="lp">
+  <div class="lp-title">⚡ LAYERS</div>
+
+  <div class="lp-sec">
+    <div class="lp-lbl">Intelligence</div>
+    <div class="lp-row"><input type="checkbox" id="lyr-trade" checked><label for="lyr-trade">Trade Arcs</label><span class="lp-count">10</span></div>
+    <div class="lp-row"><input type="checkbox" id="lyr-flights" checked><label for="lyr-flights">Live Flights</label><span class="lp-count">OpenSky</span></div>
+    <div class="lp-row"><input type="checkbox" id="lyr-ships"><label for="lyr-ships">Vessel Tracking</label><span class="lp-count">AIS</span></div>
+    <div class="lp-row"><input type="checkbox" id="lyr-fires"><label for="lyr-fires">Fire Detection</label><span class="lp-count">FIRMS</span></div>
+  </div>
+
+  <div class="lp-sec">
+    <div class="lp-lbl">Commodities</div>
+    <div class="lp-row"><input type="checkbox" id="lyr-cobalt" checked><label for="lyr-cobalt">Cobalt Corridor</label></div>
+    <div class="lp-row"><input type="checkbox" id="lyr-gold" checked><label for="lyr-gold">Gold &amp; PGMs</label></div>
+    <div class="lp-row"><input type="checkbox" id="lyr-oil"><label for="lyr-oil">Oil &amp; Gas</label></div>
+    <div class="lp-row"><input type="checkbox" id="lyr-agri"><label for="lyr-agri">Agriculture</label></div>
+  </div>
+
+  <div class="lp-sec">
+    <div class="lp-lbl">Infrastructure</div>
+    <div class="lp-row"><input type="checkbox" id="lyr-greent"><label for="lyr-greent">Green T Network</label></div>
+    <div class="lp-row"><input type="checkbox" id="lyr-ports"><label for="lyr-ports">Ports</label></div>
+  </div>
+
+  <button class="lp-btn" onclick="location.href='markets.html'">↗ OPEN MARKETS</button>
+</div>
+
+<!-- RIGHT INTELLIGENCE PANEL -->
+<div id="rp">
+  <div class="rp-toggle" onclick="toggleRP()">◀</div>
+
+  <div class="rp-hero">
+    <div class="rp-country" id="rp-country">AFRICA</div>
+    <div class="rp-gdp" id="rp-gdp">54 NATIONS · SIRIUS ENGINE ACTIVE · CLICK A COUNTRY</div>
+  </div>
+
+  <!-- Tab strip -->
+  <div class="rp-tabs">
+    <div class="rp-tab on" onclick="setTab('markets',this)">MARKETS</div>
+    <div class="rp-tab" onclick="setTab('intel',this)">INTEL</div>
+    <div class="rp-tab" onclick="setTab('prices',this)">PRICES</div>
+    <div class="rp-tab" onclick="setTab('crypto',this)">CRYPTO</div>
+    <div class="rp-tab" onclick="setTab('minerals',this)">MINERALS</div>
+    <div class="rp-tab" onclick="setTab('geo',this)">GEO</div>
+    <div class="rp-tab" onclick="setTab('greent',this)">GREEN T</div>
+  </div>
+
+  <div class="rp-content" id="rp-content">
+    <!-- Populated by JS -->
+  </div>
+</div>
+
+<!-- BOTTOM TICKER -->
+<div id="bb">
+  <div class="bl">SIRIUS</div>
+  <div class="ttrack"><div class="tinner" id="ticker"></div></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// COUNTRY DATA — 54 African Nations
+// ═══════════════════════════════════════════════════════════════════════════
+const COUNTRIES = {
+  DZ:{name:'Algeria',lat:28.0,lng:1.7,gdp:167,minerals:['Oil','Gas','Iron Ore','Gold','Phosphate'],agri:['Wheat','Dates','Barley','Citrus'],trade:['EU','CN','US'],color:'#f97316',markets:[{t:'Algeria gas exports up Q2?',p:58,v:'R12K'}]},
+  EG:{name:'Egypt',lat:26.8,lng:30.8,gdp:404,minerals:['Oil','Gas','Phosphate','Gold','Iron Ore'],agri:['Cotton','Wheat','Rice','Sugarcane','Citrus'],trade:['EU','CN','US','SA'],color:'#f97316',markets:[{t:'Suez Canal transit +10% WoW?',p:62,v:'R87K'}]},
+  LY:{name:'Libya',lat:26.3,lng:17.2,gdp:34,minerals:['Oil','Gas'],agri:['Wheat','Olives','Dates'],trade:['EU','TR','CN'],color:'#f97316',markets:[]},
+  MA:{name:'Morocco',lat:31.8,lng:-7.1,gdp:130,minerals:['Phosphate (70% world)','Iron Ore','Manganese','Cobalt'],agri:['Phosphate','Citrus','Olives','Wheat','Cannabis'],trade:['EU','US','CN','IN'],color:'#f97316',markets:[{t:'Morocco phosphate price +5%?',p:54,v:'R22K'}]},
+  SD:{name:'Sudan',lat:12.9,lng:30.2,gdp:30,minerals:['Gold','Oil','Uranium','Chromite'],agri:['Sorghum','Cotton','Sesame','Gum Arabic'],trade:['CN','SA','EU','AE'],color:'#f97316',markets:[]},
+  TN:{name:'Tunisia',lat:33.9,lng:9.6,gdp:45,minerals:['Phosphate','Iron Ore','Oil','Gas'],agri:['Olives','Wheat','Citrus','Dates'],trade:['EU','CN','TR'],color:'#f97316',markets:[]},
+  MR:{name:'Mauritania',lat:20.3,lng:-10.9,gdp:10,minerals:['Iron Ore','Gold','Copper','Oil'],agri:['Fish','Livestock','Millet','Rice'],trade:['CN','EU','FR'],color:'#00b8ff',markets:[]},
+  SN:{name:'Senegal',lat:14.5,lng:-14.5,gdp:27,minerals:['Phosphate','Gold','Oil','Gas','Ilmenite','Zircon'],agri:['Groundnuts','Fish','Millet','Cotton','Cassava'],trade:['EU','ML','CN','IN'],color:'#00b8ff',markets:[]},
+  GM:{name:'Gambia',lat:13.4,lng:-15.3,gdp:2,minerals:['Ilmenite','Zircon','Rutile'],agri:['Groundnuts','Fish','Sesame','Rice'],trade:['SN','EU','CN'],color:'#00b8ff',markets:[]},
+  GW:{name:'Guinea-Bissau',lat:11.8,lng:-15.2,gdp:1.8,minerals:['Phosphates','Bauxite'],agri:['Cashews (90% exports)','Fish','Rice'],trade:['IN','EU','SN'],color:'#00b8ff',markets:[]},
+  GN:{name:'Guinea',lat:10.1,lng:-12.3,gdp:15,minerals:['Bauxite (40% world)','Iron Ore (Simandou)','Gold','Diamonds'],agri:['Coffee','Pineapple','Palm Oil','Rice'],trade:['CN','EU','US'],color:'#00b8ff',markets:[{t:'Simandou iron ore production 2028?',p:43,v:'R44K'}]},
+  SL:{name:'Sierra Leone',lat:8.5,lng:-11.8,gdp:4,minerals:['Diamonds','Titanium','Bauxite','Gold','Iron Ore'],agri:['Cocoa','Coffee','Palm Oil','Fish','Rice'],trade:['EU','CN','US'],color:'#00b8ff',markets:[]},
+  LR:{name:'Liberia',lat:6.4,lng:-9.4,gdp:3.5,minerals:['Iron Ore','Gold','Diamonds','Rubber'],agri:['Rubber','Cocoa','Coffee','Rice','Palm Oil'],trade:['EU','US','CN'],color:'#00b8ff',markets:[]},
+  CI:{name:"Côte d'Ivoire",lat:7.5,lng:-5.6,gdp:70,minerals:['Gold','Diamonds','Manganese','Oil'],agri:["Cocoa (#1 world 40%)","Coffee","Palm Oil","Rubber","Cashews"],trade:['EU','US','CN'],color:'#00b8ff',markets:[{t:'Cocoa peak this season?',p:58,v:'R71K'}]},
+  GH:{name:'Ghana',lat:7.9,lng:-1.0,gdp:72,minerals:['Gold','Bauxite','Manganese','Oil','Lithium (Ewoyaa)'],agri:['Cocoa (#2 world)','Gold','Oil','Timber','Cashews'],trade:['CN','EU','US','IN'],color:'#00b8ff',markets:[]},
+  TG:{name:'Togo',lat:8.6,lng:0.8,gdp:8,minerals:['Phosphates','Limestone','Gold'],agri:['Coffee','Cocoa','Cassava','Cotton'],trade:['EU','CI','GH','BJ'],color:'#00b8ff',markets:[]},
+  BJ:{name:'Benin',lat:9.3,lng:2.3,gdp:15,minerals:['Gold','Oil','Phosphate'],agri:['Cotton','Cashews','Palm Oil','Cocoa'],trade:['NG','EU','IN'],color:'#00b8ff',markets:[]},
+  NE:{name:'Niger',lat:17.6,lng:8.1,gdp:14,minerals:['Uranium (#4 world)','Gold','Oil','Coal'],agri:['Millet','Sorghum','Cowpeas','Livestock'],trade:['FR','CN','NG'],color:'#00b8ff',markets:[]},
+  ML:{name:'Mali',lat:17.6,lng:-4.0,gdp:19,minerals:['Gold (#3 Africa)','Lithium (Goulamina)','Phosphate'],agri:['Cotton','Millet','Sorghum','Rice'],trade:['CI','SN','EU','CN'],color:'#00b8ff',markets:[]},
+  BF:{name:'Burkina Faso',lat:12.4,lng:-1.6,gdp:16,minerals:['Gold','Manganese','Zinc','Phosphate'],agri:['Cotton','Sorghum','Millet','Shea'],trade:['EU','CN','GH','CI'],color:'#00b8ff',markets:[]},
+  NG:{name:'Nigeria',lat:9.1,lng:8.7,gdp:440,minerals:['Oil','Gas','Coal','Iron Ore','Tin','Columbite'],agri:['Cocoa','Cassava','Maize','Palm Oil','Sesame'],trade:['CN','IN','EU','US'],color:'#00b8ff',markets:[{t:'Nigeria incumbent wins 2027?',p:52,v:'R29K'},{t:'Nigeria oil above 1.5M bbl/day?',p:42,v:'R38K'}]},
+  CV:{name:'Cape Verde',lat:16.0,lng:-24.0,gdp:2,minerals:['Salt','Pozzolana'],agri:['Bananas','Coffee','Fish'],trade:['EU','US'],color:'#00b8ff',markets:[]},
+  CM:{name:'Cameroon',lat:3.9,lng:11.5,gdp:44,minerals:['Oil','Bauxite','Iron Ore','Cobalt','Gold'],agri:['Cocoa','Coffee','Cotton','Rubber','Timber'],trade:['CN','EU','NG'],color:'#e879f9',markets:[]},
+  CF:{name:'Central African Rep.',lat:6.6,lng:20.9,gdp:2.5,minerals:['Diamonds','Gold','Oil','Uranium','Copper'],agri:['Timber','Coffee','Cotton','Cassava'],trade:['CN','FR','CM'],color:'#e879f9',markets:[]},
+  TD:{name:'Chad',lat:15.5,lng:18.7,gdp:12,minerals:['Oil','Uranium','Gold'],agri:['Cotton','Sorghum','Millet','Livestock'],trade:['CN','CM','EU'],color:'#e879f9',markets:[]},
+  GQ:{name:'Equatorial Guinea',lat:1.7,lng:10.3,gdp:12,minerals:['Oil','Gas','Gold'],agri:['Cocoa','Coffee','Timber','Fish'],trade:['CN','US','EU'],color:'#e879f9',markets:[]},
+  GA:{name:'Gabon',lat:-0.8,lng:11.6,gdp:19,minerals:['Manganese (#2 world)','Iron Ore','Oil','Gold','Uranium'],agri:['Cocoa','Coffee','Timber','Palm Oil'],trade:['CN','EU','US'],color:'#e879f9',markets:[]},
+  CG:{name:'Republic of Congo',lat:-0.2,lng:15.8,gdp:13,minerals:['Oil','Timber','Potash','Iron Ore'],agri:['Cassava','Sugar','Cocoa','Coffee'],trade:['CN','EU','US'],color:'#e879f9',markets:[]},
+  CD:{name:'DR Congo',lat:-3.0,lng:23.7,gdp:55,minerals:['Cobalt (60% world)','Copper','Coltan/Tantalum','Gold','Diamonds','Lithium (Manono)','Uranium','REE'],agri:['Coffee','Cocoa','Cassava','Palm Oil','Rubber'],trade:['CN','EU','ZM','AO'],color:'#e879f9',markets:[{t:'DRC cobalt export volume up Q2?',p:54,v:'R58K'},{t:'Cobalt spot price +5% this month?',p:47,v:'R89K'}]},
+  ST:{name:'São Tomé &amp; Príncipe',lat:0.2,lng:6.6,gdp:0.5,minerals:['Oil potential'],agri:['Cocoa','Coffee','Palm Oil','Fish'],trade:['EU','AO','NG'],color:'#e879f9',markets:[]},
+  BI:{name:'Burundi',lat:-3.4,lng:29.9,gdp:3,minerals:['Nickel','Gold','Tungsten','Coltan'],agri:['Coffee','Tea','Cotton','Cassava'],trade:['EU','TZ','CN'],color:'#ffd700',markets:[]},
+  KM:{name:'Comoros',lat:-11.6,lng:43.3,gdp:1.3,minerals:['None significant'],agri:['Vanilla','Cloves','Ylang-ylang'],trade:['EU','IN','TZ'],color:'#ffd700',markets:[]},
+  DJ:{name:'Djibouti',lat:11.8,lng:42.6,gdp:3.5,minerals:['Salt','Geothermal'],agri:['Livestock','Fish','Qat'],trade:['ET','CN','EU'],color:'#ffd700',markets:[]},
+  ER:{name:'Eritrea',lat:15.2,lng:39.8,gdp:2,minerals:['Gold','Silver','Copper','Zinc','Potash'],agri:['Sorghum','Lentils','Fish'],trade:['CN','EU','AE'],color:'#ffd700',markets:[]},
+  ET:{name:'Ethiopia',lat:9.1,lng:40.5,gdp:126,minerals:['Gold','Potash','Tantalum','Coal'],agri:['Coffee (birthplace)','Tea','Cut Flowers (#2 world)','Sesame','Khat'],trade:['CN','US','EU','SA'],color:'#ffd700',markets:[{t:'Ethiopia flower exports up 2026?',p:66,v:'R34K'}]},
+  KE:{name:'Kenya',lat:-0.0,lng:37.9,gdp:111,minerals:['Soda Ash','Fluorite','Titanium','REE','Oil','Gold'],agri:['Tea (#1 exporter)','Coffee','Cut Flowers','Avocados','Vanilla'],trade:['EU','US','CN','TZ'],color:'#ffd700',markets:[{t:'Kenya AA coffee above $3.50/lb?',p:66,v:'R43K'}]},
+  MG:{name:'Madagascar',lat:-18.8,lng:46.9,gdp:14,minerals:['Chromite','Graphite','Nickel','Cobalt','REE','Sapphire'],agri:['Vanilla (#1 world 80%)','Coffee','Cloves','Cocoa','Ylang-ylang'],trade:['EU','US','CN','IN'],color:'#ffd700',markets:[]},
+  MU:{name:'Mauritius',lat:-20.3,lng:57.6,gdp:12,minerals:['None significant'],agri:['Sugar','Tea','Fish','Seafood'],trade:['EU','US','CN','IN'],color:'#ffd700',markets:[]},
+  MZ:{name:'Mozambique',lat:-18.7,lng:35.5,gdp:15,minerals:['Gas (LNG)','Coal','Graphite (Balama)','Tantalum','REE'],agri:['Cashews','Cotton','Sugar','Prawns','Tobacco'],trade:['ZA','EU','CN','IN'],color:'#ffd700',markets:[]},
+  RW:{name:'Rwanda',lat:-1.9,lng:29.9,gdp:11,minerals:['Coltan','Cassiterite','Wolframite','Gold','REE'],agri:['Coffee','Tea','Pyrethrum','Avocados'],trade:['EU','US','CN','TZ'],color:'#ffd700',markets:[]},
+  SC:{name:'Seychelles',lat:-4.7,lng:55.5,gdp:1.6,minerals:['None significant'],agri:['Coconuts','Vanilla','Fish','Cinnamon'],trade:['EU','AE','IN'],color:'#ffd700',markets:[]},
+  SO:{name:'Somalia',lat:6.1,lng:46.2,gdp:8,minerals:['Oil','Gas','Uranium','Iron Ore'],agri:['Livestock','Bananas','Fish','Frankincense'],trade:['ET','DJ','AE'],color:'#ffd700',markets:[]},
+  SS:{name:'South Sudan',lat:7.9,lng:29.7,gdp:4,minerals:['Oil','Gold','Diamonds','Iron Ore'],agri:['Sorghum','Maize','Groundnuts','Livestock'],trade:['CN','ET','SD'],color:'#ffd700',markets:[]},
+  TZ:{name:'Tanzania',lat:-6.4,lng:34.9,gdp:76,minerals:['Gold','Diamonds','Tanzanite','Coal','Gas','REE','Graphite'],agri:['Coffee','Tea','Tobacco','Cotton','Cashews'],trade:['IN','EU','CN','ZM'],color:'#ffd700',markets:[]},
+  UG:{name:'Uganda',lat:1.4,lng:32.3,gdp:40,minerals:['Oil','Gold','Cobalt','Copper','REE','Coltan'],agri:['Coffee','Tea','Vanilla','Fish','Tobacco'],trade:['EU','US','KE','CN'],color:'#ffd700',markets:[]},
+  MW:{name:'Malawi',lat:-13.3,lng:34.3,gdp:13,minerals:['Uranium','Coal','Bauxite','Graphite','REE','Vanadium'],agri:['Tobacco','Tea','Sugar','Cotton','Groundnuts'],trade:['ZM','ZW','EU','CN'],color:'#00e5a0',markets:[]},
+  ZM:{name:'Zambia',lat:-13.1,lng:27.8,gdp:28,minerals:['Copper','Cobalt','Zinc','Lead','Gold','Uranium','Emeralds'],agri:['Maize','Tobacco','Cotton','Soybeans','Sugarcane'],trade:['CN','EU','ZA','IN'],color:'#00e5a0',markets:[{t:'Zambia copper output Q2?',p:51,v:'R29K'}]},
+  ZW:{name:'Zimbabwe',lat:-19.0,lng:29.9,gdp:28,minerals:['Platinum','Chrome','Diamonds','Gold','Lithium (Bikita)','Nickel','Coal','REE'],agri:['Tobacco','Maize','Cotton','Soybeans','Tea'],trade:['ZA','CN','EU','AE'],color:'#00e5a0',markets:[{t:'Zimbabwe opposition coalition 2027?',p:38,v:'R18K'}]},
+  AO:{name:'Angola',lat:-11.2,lng:17.9,gdp:75,minerals:['Oil (#2 Africa)','Diamonds','Iron Ore','Phosphates','Copper','Gold','Manganese'],agri:['Coffee','Sisal','Fish','Cassava','Cotton'],trade:['CN','EU','US','IN'],color:'#00e5a0',markets:[]},
+  NA:{name:'Namibia',lat:-22.0,lng:17.1,gdp:12,minerals:['Diamonds (marine)','Uranium (Rössing/Husab)','Gold','Copper','Lithium','REE'],agri:['Beef','Fish','Grapes','Karakul','Dates'],trade:['ZA','EU','CN','US'],color:'#00e5a0',markets:[]},
+  BW:{name:'Botswana',lat:-22.3,lng:24.7,gdp:18,minerals:['Diamonds (#1 value world)','Copper','Nickel','Cobalt','Coal','Soda Ash','Uranium'],agri:['Beef (premium)','Sorghum','Maize','Millet'],trade:['ZA','EU','CN','US'],color:'#00e5a0',markets:[]},
+  LS:{name:'Lesotho',lat:-29.6,lng:28.2,gdp:2.6,minerals:['Diamonds','Water (Lesotho Highlands)'],agri:['Maize','Wheat','Sorghum','Wool'],trade:['ZA','EU','US'],color:'#00e5a0',markets:[]},
+  SZ:{name:'Eswatini',lat:-26.5,lng:31.5,gdp:4.7,minerals:['Coal','Asbestos','Iron Ore','Diamonds'],agri:['Sugarcane','Cotton','Maize','Citrus','Timber'],trade:['ZA','EU','US'],color:'#00e5a0',markets:[]},
+  ZA:{name:'South Africa',lat:-30.6,lng:25.0,gdp:403,minerals:['Platinum (80% world)','Palladium','Rhodium','Chromium (80% world)','Vanadium (70%)','Manganese','Gold','Diamonds','Coal','Uranium','Titanium'],agri:['Maize','Wheat','Soybeans','Sugarcane','Wine','Citrus','Macadamia'],trade:['CN','EU','US','IN','JP'],color:'#00e5a0',markets:[{t:'Eskom Stage 4+ this week?',p:31,v:'R201K'},{t:'SA petrol price increase May?',p:67,v:'R188K'},{t:'Gold above $3,200 Q2?',p:61,v:'R221K'},{t:'ANC below 40% next election?',p:62,v:'R89K'}]},
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GREEN T NETWORK — SA Highway Charging Stations
+// ═══════════════════════════════════════════════════════════════════════════
+const GREENT = [
+  {lat:-26.2,lng:28.0,name:'Johannesburg Hub',capacity:20,partner:'Huawei HQ',status:'ACTIVE'},
+  {lat:-25.7,lng:28.2,name:'Pretoria N1 North',capacity:12,partner:'Shell',status:'ACTIVE'},
+  {lat:-27.8,lng:26.6,name:'Vereeniging N1 South',capacity:8,partner:'Engen',status:'BUILD'},
+  {lat:-29.0,lng:26.2,name:'Kroonstad N1',capacity:8,partner:'BP',status:'BUILD'},
+  {lat:-31.0,lng:26.7,name:'Colesberg Junction',capacity:10,partner:'Sasol',status:'PLAN'},
+  {lat:-33.0,lng:19.4,name:'Touws River N1',capacity:8,partner:'Astron',status:'PLAN'},
+  {lat:-33.9,lng:18.4,name:'Cape Town N1 End',capacity:16,partner:'Walmart',status:'PLAN'},
+  {lat:-26.5,lng:29.1,name:'Middelburg N4 East',capacity:10,partner:'Engen',status:'ACTIVE'},
+  {lat:-26.0,lng:30.0,name:'Nelspruit N4',capacity:8,partner:'BP',status:'BUILD'},
+  {lat:-25.5,lng:31.3,name:'Mozambique Gateway',capacity:6,partner:'Shell',status:'PLAN'},
+  {lat:-29.8,lng:31.0,name:'Durban N3 End',capacity:16,partner:'Huawei HQ',status:'ACTIVE'},
+  {lat:-28.5,lng:29.6,name:'Pietermaritzburg N3',capacity:10,partner:'Sasol',status:'BUILD'},
+  {lat:-27.9,lng:29.1,name:'Estcourt N3',capacity:8,partner:'Engen',status:'BUILD'},
+  {lat:-26.8,lng:28.9,name:'Heidelberg N3',capacity:10,partner:'BP',status:'ACTIVE'},
+  {lat:-25.8,lng:25.8,name:'Zeerust N14',capacity:8,partner:'Shell',status:'PLAN'},
+  {lat:-24.8,lng:26.6,name:'Lephalale N11',capacity:8,partner:'Engen',status:'PLAN'},
+  {lat:-23.9,lng:29.5,name:'Polokwane N1 North',capacity:12,partner:'Huawei',status:'BUILD'},
+  {lat:-33.6,lng:26.9,name:'Port Elizabeth N2',capacity:10,partner:'Walmart',status:'PLAN'},
+  {lat:-28.7,lng:24.8,name:'Kimberley N12',capacity:8,partner:'Astron',status:'PLAN'},
+  {lat:-27.3,lng:23.0,name:'Kuruman N14',capacity:6,partner:'BP',status:'PLAN'},
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GLOBE SETUP
+// ═══════════════════════════════════════════════════════════════════════════
+const globeEl = document.getElementById('globe-container');
+let selectedCountry = null;
+let currentTab = 'markets';
+let swarmSignals = 0;
+
+const countryPoints = Object.entries(COUNTRIES).map(([iso,c])=>({
+  iso,...c,size:Math.sqrt(c.gdp||1)*0.15+0.3,
+}));
+
+const GLOBE_WIDTH = () => window.innerWidth - (window.innerWidth > 900 ? 320 : 0);
+
+const globe = Globe()(globeEl)
+  .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
+  .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+  .atmosphereColor('rgba(0,229,160,0.3)')
+  .atmosphereAltitude(0.16)
+  .pointsData(countryPoints)
+  .pointLat('lat').pointLng('lng')
+  .pointColor('color').pointRadius('size').pointAltitude(0.01)
+  .pointLabel(d=>`<div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#00e5a0;background:rgba(3,6,12,0.96);padding:6px 10px;border:1px solid rgba(0,229,160,0.3);border-radius:4px;backdrop-filter:blur(8px)">${d.name}<br><span style="color:rgba(232,238,245,0.55);font-size:9px">GDP $${d.gdp}B · ${d.minerals.length} resources · ${d.markets.length} markets</span></div>`)
+  .onPointClick(d=>selectCountry(d))
+  .width(GLOBE_WIDTH()).height(window.innerHeight)
+  .backgroundColor('rgba(3,6,12,1)');
+
+globe.controls().autoRotate=true;
+globe.controls().autoRotateSpeed=0.3;
+globe.controls().enableDamping=true;
+
+// Trade arcs
+const ARCS=[
+  {srcLat:-11.5,srcLng:26.5,dstLat:31.2,dstLng:121.5,color:'rgba(96,165,250,0.6)',stroke:1.5},
+  {srcLat:-26.2,srcLng:27.8,dstLat:51.5,dstLng:-0.1,color:'rgba(251,191,36,0.6)',stroke:1.5},
+  {srcLat:31.5,srcLng:-8.0,dstLat:35.7,dstLng:139.7,color:'rgba(253,230,138,0.5)',stroke:1},
+  {srcLat:4.8,srcLng:2.5,dstLat:40.7,dstLng:-74.0,color:'rgba(239,68,68,0.6)',stroke:1.5},
+  {srcLat:-26.2,srcLng:27.8,dstLat:22.5,dstLng:114.1,color:'rgba(167,139,250,0.5)',stroke:1},
+  {srcLat:-11.5,srcLng:26.5,dstLat:-26.2,dstLng:27.8,color:'rgba(0,229,160,0.4)',stroke:1},
+  {srcLat:7.9,srcLng:-1.0,dstLat:52.4,dstLng:4.9,color:'rgba(146,64,14,0.6)',stroke:1},
+  {srcLat:9.1,srcLng:40.5,dstLat:48.9,dstLng:2.4,color:'rgba(120,53,15,0.6)',stroke:1},
+  {srcLat:-22.0,srcLng:15.0,dstLat:31.2,dstLng:121.5,color:'rgba(74,222,128,0.5)',stroke:1},
+  {srcLat:-18.7,srcLng:35.5,dstLat:22.3,dstLng:114.2,color:'rgba(0,184,255,0.5)',stroke:1},
+];
+
+globe.arcsData(ARCS)
+  .arcStartLat('srcLat').arcStartLng('srcLng')
+  .arcEndLat('dstLat').arcEndLng('dstLng')
+  .arcColor('color').arcStroke('stroke')
+  .arcDashLength(0.4).arcDashGap(0.2).arcDashAnimateTime(3000);
+
+function flyTo(lat,lng,alt,btn){
+  globe.pointOfView({lat,lng,altitude:alt},1200);
+  globe.controls().autoRotate=false;
+  document.querySelectorAll('.rbtn').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+}
+
+function flyGreent(){
+  flyTo(-28,25,2.5,document.querySelector('.rbtn:last-child'));
+  setTimeout(()=>{
+    selectCountry({...COUNTRIES.ZA,iso:'ZA'});
+    setTab('greent',document.querySelectorAll('.rp-tab')[6]);
+  },1300);
+}
+
+setTimeout(()=>{globe.pointOfView({lat:0,lng:20,altitude:2.5},1500);},3200);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COUNTRY SELECTION & PANEL
+// ═══════════════════════════════════════════════════════════════════════════
+function selectCountry(d){
+  if(!d)return;
+  selectedCountry=d;
+  globe.pointOfView({lat:d.lat,lng:d.lng,altitude:1.8},1000);
+  globe.controls().autoRotate=false;
+  document.getElementById('rp-country').textContent=d.name.toUpperCase();
+  document.getElementById('rp-gdp').textContent=`GDP $${d.gdp}B · ${d.minerals.length} RESOURCES · ${d.markets.length} ACTIVE MARKETS`;
+  renderPanel();
+}
+
+function setTab(tab,el){
+  currentTab=tab;
+  document.querySelectorAll('.rp-tab').forEach(t=>t.classList.remove('on'));
+  if(el)el.classList.add('on');
+  renderPanel();
+}
+
+function renderPanel(){
+  const c=document.getElementById('rp-content');
+  if(currentTab==='markets')c.innerHTML=renderMarkets();
+  else if(currentTab==='intel')c.innerHTML=renderIntel();
+  else if(currentTab==='prices')c.innerHTML=renderPrices();
+  else if(currentTab==='crypto')c.innerHTML=renderCrypto();
+  else if(currentTab==='minerals')c.innerHTML=renderMinerals();
+  else if(currentTab==='geo')c.innerHTML=renderGeo();
+  else if(currentTab==='greent')c.innerHTML=renderGreenT();
+}
+
+// ── TAB: MARKETS ──
+function renderMarkets(){
+  const d=selectedCountry;
+  if(!d){
+    // Show featured African markets
+    const featured=[
+      {t:'Eskom Stage 4+ this week?',p:31,v:'R201K',c:'🇿🇦'},
+      {t:'DRC cobalt export volume up Q2?',p:54,v:'R58K',c:'🇨🇩'},
+      {t:'Gold above $3,200 Q2?',p:61,v:'R221K',c:'🇿🇦'},
+      {t:'Nigeria incumbent wins 2027?',p:52,v:'R29K',c:'🇳🇬'},
+      {t:'Cocoa peaks this season?',p:58,v:'R71K',c:'🇨🇮'},
+      {t:'Kenya AA coffee above $3.50/lb?',p:66,v:'R43K',c:'🇰🇪'},
+    ];
+    return `
+      <div class="swarm-readout">
+        <div class="sr-head">
+          <div class="sr-title">SIRIUS SWARM</div>
+          <div class="sr-live">● 200 AGENTS ACTIVE</div>
+        </div>
+        <div class="sr-val" id="swarm-val">0</div>
+        <div class="sr-lbl">PRICE SIGNALS / MIN</div>
+      </div>
+      <div class="sec-label">FEATURED AFRICAN MARKETS</div>
+      ${featured.map(m=>`<div class="market-pill" onclick="openMarket()"><div class="mp-title">${m.c} ${m.t}</div><div class="mp-bottom"><span class="mp-prob">YES · ${m.p}%</span><span class="mp-vol">Vol ${m.v}</span></div></div>`).join('')}
+      <button class="trade-btn" onclick="location.href='markets.html'">OPEN FULL MARKETS →</button>
+    `;
+  }
+  if(d.markets.length===0){
+    return `<div class="sec-label">${d.name.toUpperCase()} MARKETS</div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
+        <div style="font-size:12px;color:var(--dim);line-height:1.6;">No active markets for ${d.name} yet.<br>Upgrade to Pro to create markets for this country.</div>
+      </div>
+      <button class="trade-btn" onclick="location.href='markets.html'">BROWSE ALL MARKETS →</button>`;
+  }
+  return `<div class="sec-label">${d.name.toUpperCase()} MARKETS</div>
+    ${d.markets.map(m=>`<div class="market-pill" onclick="openMarket()"><div class="mp-title">${m.t}</div><div class="mp-bottom"><span class="mp-prob">YES · ${m.p}%</span><span class="mp-vol">Vol ${m.v}</span></div></div>`).join('')}
+    <button class="trade-btn" onclick="location.href='markets.html'">OPEN FULL MARKETS →</button>`;
+}
+
+// ── TAB: INTEL (Live feeds) ──
+function renderIntel(){
+  const now=new Date();
+  const t=(min)=>{const d=new Date(now-min*60000);return d.getUTCHours().toString().padStart(2,'0')+':'+d.getUTCMinutes().toString().padStart(2,'0');};
+  return `
+    <div class="sec-label">LIVE INTELLIGENCE FEED</div>
+    <div class="feed-item"><div class="fi-time">${t(1)} UTC · LIVE</div><div class="fi-text">New vessel LOBITO SPIRIT docked Angola. Cobalt cargo offload commencing.</div><span class="fi-tag" style="background:rgba(0,184,255,0.12);color:#60a5fa">MARITIME</span></div>
+    <div class="feed-item p"><div class="fi-time">${t(3)} UTC</div><div class="fi-text">Sentinel-1 SAR pass queued over DRC North Kivu. Coltan activity zone flagged by ML model.</div><span class="fi-tag" style="background:rgba(167,139,250,0.12);color:#c4b5fd">SAR / AI</span></div>
+    <div class="feed-item"><div class="fi-time">${t(7)} UTC</div><div class="fi-text">Morocco OCP Group Q1 phosphate volumes beat forecast by 8%. Asia demand strong.</div><span class="fi-tag" style="background:rgba(0,229,160,0.1);color:#00e5a0">AGRI/TRADE</span></div>
+    <div class="feed-item w"><div class="fi-time">${t(12)} UTC</div><div class="fi-text">Cocoa dry-spell forecast CI: AI crop yield model projecting 4% shortfall Q3.</div><span class="fi-tag" style="background:rgba(245,158,11,0.12);color:#fbbf24">AGRI/AI</span></div>
+    <div class="feed-item"><div class="fi-time">${t(18)} UTC</div><div class="fi-text">SA platinum exports stable. Bushveld operations unaffected by latest load-shedding.</div><span class="fi-tag" style="background:rgba(0,229,160,0.1);color:#00e5a0">MINERALS</span></div>
+    <div class="feed-item r"><div class="fi-time">${t(24)} UTC</div><div class="fi-text">Eskom Stage 3 escalation risk — coal stock below 10-day threshold at 3 power stations.</div><span class="fi-tag" style="background:rgba(239,68,68,0.12);color:#f87171">ENERGY</span></div>
+    <div class="feed-item"><div class="fi-time">${t(33)} UTC</div><div class="fi-text">Husab uranium mine Namibia ramping to full capacity. Production +12% YoY.</div><span class="fi-tag" style="background:rgba(0,229,160,0.1);color:#00e5a0">URANIUM</span></div>
+    <div class="feed-item p"><div class="fi-time">${t(42)} UTC</div><div class="fi-text">MiroFish swarm: 847 agents simulated across DRC cobalt market. Consensus = bullish 30-day.</div><span class="fi-tag" style="background:rgba(167,139,250,0.12);color:#c4b5fd">SWARM AI</span></div>
+    <div class="sec-label" style="margin-top:14px;">DATA SOURCES (8 ACTIVE)</div>
+    <div class="dr"><div class="dr-ico" style="background:#00e5a0"></div><div class="dr-name">OpenSky · Flights</div><span class="tag" style="background:rgba(0,229,160,0.1);color:var(--accent)">LIVE</span></div>
+    <div class="dr"><div class="dr-ico" style="background:#00e5a0"></div><div class="dr-name">GDELT · Events</div><span class="tag" style="background:rgba(0,229,160,0.1);color:var(--accent)">LIVE</span></div>
+    <div class="dr"><div class="dr-ico" style="background:#00e5a0"></div><div class="dr-name">FIRMS · Fire Detection</div><span class="tag" style="background:rgba(0,229,160,0.1);color:var(--accent)">LIVE</span></div>
+    <div class="dr"><div class="dr-ico" style="background:#00e5a0"></div><div class="dr-name">AIS · Vessel Tracking</div><span class="tag" style="background:rgba(0,229,160,0.1);color:var(--accent)">LIVE</span></div>
+    <div class="dr"><div class="dr-ico" style="background:#fbbf24"></div><div class="dr-name">Safecast · Radiation</div><span class="tag" style="background:rgba(251,191,36,0.12);color:var(--gold)">QUEUED</span></div>
+    <div class="dr"><div class="dr-ico" style="background:#fbbf24"></div><div class="dr-name">Telegram · OSINT</div><span class="tag" style="background:rgba(251,191,36,0.12);color:var(--gold)">QUEUED</span></div>
+  `;
+}
+
+// ── TAB: PRICES (Live market data) ──
+function renderPrices(){
+  return `
+    <div class="sec-label">COMMODITIES · LIVE</div>
+    <div class="price-row"><div class="pr-name">Gold <small>oz</small></div><div><span class="pr-val" id="p-gold">$3,218</span><span class="pr-chg up">+0.8%</span></div></div>
+    <div class="price-row"><div class="pr-name">Silver <small>oz</small></div><div><span class="pr-val" id="p-silver">$38.42</span><span class="pr-chg up">+1.2%</span></div></div>
+    <div class="price-row"><div class="pr-name">Platinum <small>oz</small></div><div><span class="pr-val" id="p-plat">$961</span><span class="pr-chg dn">-0.3%</span></div></div>
+    <div class="price-row"><div class="pr-name">Cobalt <small>/t</small></div><div><span class="pr-val" id="p-cobalt">$32,140</span><span class="pr-chg up">+2.1%</span></div></div>
+    <div class="price-row"><div class="pr-name">Copper <small>/t</small></div><div><span class="pr-val" id="p-cu">$9,847</span><span class="pr-chg up">+0.4%</span></div></div>
+    <div class="price-row"><div class="pr-name">Brent Oil <small>bbl</small></div><div><span class="pr-val" id="p-brent">$87.40</span><span class="pr-chg up">+1.1%</span></div></div>
+    <div class="price-row"><div class="pr-name">WTI <small>bbl</small></div><div><span class="pr-val" id="p-wti">$84.20</span><span class="pr-chg up">+0.9%</span></div></div>
+
+    <div class="sec-label" style="margin-top:14px;">FOREX · LIVE</div>
+    <div class="price-row"><div class="pr-name">ZAR/USD</div><div><span class="pr-val">R18.22</span><span class="pr-chg dn">-0.2%</span></div></div>
+    <div class="price-row"><div class="pr-name">EUR/USD</div><div><span class="pr-val">1.087</span><span class="pr-chg up">+0.1%</span></div></div>
+    <div class="price-row"><div class="pr-name">GBP/USD</div><div><span class="pr-val">1.263</span><span class="pr-chg dn">-0.3%</span></div></div>
+
+    <div class="sec-label" style="margin-top:14px;">EQUITY INDICES</div>
+    <div class="price-row"><div class="pr-name">JSE All Share</div><div><span class="pr-val">76,421</span><span class="pr-chg up">+0.6%</span></div></div>
+    <div class="price-row"><div class="pr-name">S&amp;P 500</div><div><span class="pr-val">5,742</span><span class="pr-chg up">+0.4%</span></div></div>
+    <div class="price-row"><div class="pr-name">NASDAQ</div><div><span class="pr-val">18,203</span><span class="pr-chg up">+0.7%</span></div></div>
+    <div class="price-row"><div class="pr-name">VIX</div><div><span class="pr-val">14.2</span><span class="pr-chg dn">-2.1%</span></div></div>
+  `;
+}
+
+// ── TAB: CRYPTO (Stablecoins + Alts + GENIUS Act context) ──
+function renderCrypto(){
+  return `
+    <div class="sec-label">BITCOIN &amp; MAJORS</div>
+    <div class="price-row"><div class="pr-name">Bitcoin <small>BTC</small></div><div><span class="pr-val">$84,200</span><span class="pr-chg up">+1.8%</span></div></div>
+    <div class="price-row"><div class="pr-name">Ethereum <small>ETH</small></div><div><span class="pr-val">$3,421</span><span class="pr-chg up">+2.3%</span></div></div>
+    <div class="price-row"><div class="pr-name">Solana <small>SOL</small></div><div><span class="pr-val">$188.40</span><span class="pr-chg up">+4.1%</span></div></div>
+
+    <div class="sec-label" style="margin-top:14px;">STABLECOINS · GENIUS-ALIGNED</div>
+    <div class="price-row"><div class="pr-name">USDC <small>Circle</small></div><div><span class="pr-val">$1.0001</span><span class="pr-chg up">24h vol $8.2B</span></div></div>
+    <div class="price-row"><div class="pr-name">USDT <small>Tether</small></div><div><span class="pr-val">$1.0000</span><span class="pr-chg up">24h vol $48B</span></div></div>
+    <div class="price-row"><div class="pr-name">PYUSD <small>PayPal</small></div><div><span class="pr-val">$1.0002</span><span class="pr-chg up">24h vol $340M</span></div></div>
+    <div class="price-row"><div class="pr-name">FDUSD <small>First Digital</small></div><div><span class="pr-val">$0.9998</span><span class="pr-chg dn">24h vol $2.1B</span></div></div>
+
+    <div class="sec-label" style="margin-top:14px;">SA CRYPTO ALTS</div>
+    <div class="price-row"><div class="pr-name">LUN <small>Luno Token</small></div><div><span class="pr-val">R0.84</span><span class="pr-chg up">+5.2%</span></div></div>
+    <div class="price-row"><div class="pr-name">MNT <small>Mantle</small></div><div><span class="pr-val">$0.62</span><span class="pr-chg up">+8.1%</span></div></div>
+
+    <div class="sec-label" style="margin-top:14px;">REGULATORY CONTEXT</div>
+    <div class="metric">
+      <div class="m-val" style="font-size:14px;">GENIUS ACT</div>
+      <div class="m-lbl">OCC DOCKET 2025-0372 · 376 PAGES</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:6px;">
+      <div style="font-size:11px;color:var(--text);line-height:1.6;">Federal stablecoin rulemaking published March 2026. Positions LNCELOT's crypto rail for US bank-issued stablecoin integration. 60-day comment period open.</div>
+    </div>
+  `;
+}
+
+// ── TAB: MINERALS ──
+function renderMinerals(){
+  const d=selectedCountry;
+  if(!d){
+    return `<div class="sec-label">AFRICAN CRITICAL MINERALS</div>
+      <div class="metric"><div class="m-val">60%</div><div class="m-lbl">WORLD COBALT · DRC</div></div>
+      <div class="metric"><div class="m-val">80%</div><div class="m-lbl">WORLD PLATINUM · SA</div></div>
+      <div class="metric"><div class="m-val">70%</div><div class="m-lbl">WORLD PHOSPHATE · MOROCCO</div></div>
+      <div class="metric"><div class="m-val">40%</div><div class="m-lbl">WORLD BAUXITE · GUINEA</div></div>
+      <div class="metric"><div class="m-val">80%</div><div class="m-lbl">WORLD VANILLA · MADAGASCAR</div></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--dim);line-height:1.6;">Click any country on the globe to see its mineral &amp; resource intelligence.</div>`;
+  }
+  return `<div class="sec-label">${d.name.toUpperCase()} · MINERALS</div>
+    ${d.minerals.map((m,i)=>`<div class="dr"><div class="dr-ico" style="background:${d.color}"></div><div class="dr-name">${m}</div><span class="tag tag-min">#${i+1}</span></div>`).join('')}
+    <div class="sec-label" style="margin-top:14px;">AGRICULTURE</div>
+    ${d.agri.map(a=>`<div class="dr"><div class="dr-ico" style="background:#00e5a0"></div><div class="dr-name">${a}</div><span class="tag tag-agr">AGRI</span></div>`).join('')}`;
+}
+
+// ── TAB: GEO (Geopolitical) ──
+function renderGeo(){
+  return `
+    <div class="sec-label">ACTIVE HOTSPOTS</div>
+    <div class="feed-item r"><div class="fi-time">CRITICAL · LIVE</div><div class="fi-text">Strait of Hormuz traffic +12% WoW. Oil tanker flows at 3-month high.</div><span class="fi-tag" style="background:rgba(239,68,68,0.12);color:#f87171">HORMUZ</span></div>
+    <div class="feed-item w"><div class="fi-time">WATCH · 4H</div><div class="fi-text">Red Sea shipping insurance premiums rising 8%. Suez alternative routes activating.</div><span class="fi-tag" style="background:rgba(245,158,11,0.12);color:#fbbf24">SHIPPING</span></div>
+    <div class="feed-item"><div class="fi-time">MONITORING</div><div class="fi-text">Nigeria oil production holding 1.48M bbl/day. Militant activity low this week.</div><span class="fi-tag" style="background:rgba(0,229,160,0.1);color:var(--accent)">NIGERIA</span></div>
+
+    <div class="sec-label" style="margin-top:14px;">ELECTION WATCH</div>
+    <div class="dr"><div class="dr-ico" style="background:#00e5a0"></div><div class="dr-name">SA 2029 · ANC probability</div><span class="tag tag-agr">38% &lt;40%</span></div>
+    <div class="dr"><div class="dr-ico" style="background:#00b8ff"></div><div class="dr-name">Nigeria 2027</div><span class="tag tag-log">Q1 open</span></div>
+    <div class="dr"><div class="dr-ico" style="background:#ffd700"></div><div class="dr-name">Kenya 2027</div><span class="tag" style="background:rgba(251,191,36,0.12);color:var(--gold)">MODEL</span></div>
+    <div class="dr"><div class="dr-ico" style="background:#00e5a0"></div><div class="dr-name">Zimbabwe opposition</div><span class="tag tag-agr">38%</span></div>
+
+    <div class="sec-label" style="margin-top:14px;">GLOBAL EVENTS</div>
+    <div class="dr"><div class="dr-ico" style="background:#ef4444"></div><div class="dr-name">Trump tariff on Africa Q2</div><span class="tag tag-red">44%</span></div>
+    <div class="dr"><div class="dr-ico" style="background:#00b8ff"></div><div class="dr-name">Fed rate cut May</div><span class="tag tag-log">28%</span></div>
+    <div class="dr"><div class="dr-ico" style="background:#00e5a0"></div><div class="dr-name">SA avoids grey list</div><span class="tag tag-agr">68%</span></div>
+  `;
+}
+
+// ── TAB: GREEN T ──
+function renderGreenT(){
+  const active=GREENT.filter(g=>g.status==='ACTIVE').length;
+  const build=GREENT.filter(g=>g.status==='BUILD').length;
+  const plan=GREENT.filter(g=>g.status==='PLAN').length;
+  return `
+    <div class="sec-label">GREEN T NETWORK · SOUTH AFRICA</div>
+    <div class="metric"><div class="m-val">${GREENT.length}</div><div class="m-lbl">CHARGING NODES PLANNED</div></div>
+    <div class="metric"><div class="m-val">300+</div><div class="m-lbl">EV BUSES COMMITTED</div></div>
+
+    <div class="sec-label" style="margin-top:12px;">DEPLOYMENT STATUS</div>
+    <div class="dr"><div class="dr-ico" style="background:var(--accent)"></div><div class="dr-name">Active</div><span class="tag tag-agr">${active} nodes</span></div>
+    <div class="dr"><div class="dr-ico" style="background:var(--gold)"></div><div class="dr-name">Under Construction</div><span class="tag" style="background:rgba(251,191,36,0.12);color:var(--gold)">${build} nodes</span></div>
+    <div class="dr"><div class="dr-ico" style="background:var(--warn)"></div><div class="dr-name">Planned</div><span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warn)">${plan} nodes</span></div>
+
+    <div class="sec-label" style="margin-top:12px;">CONSORTIUM</div>
+    <div class="dr"><div class="dr-ico" style="background:var(--accent)"></div><div class="dr-name">Silla Group (Lead)</div><span class="tag tag-agr">SIGNED</span></div>
+    <div class="dr"><div class="dr-ico" style="background:var(--accent)"></div><div class="dr-name">Black Resources Group</div><span class="tag tag-agr">SIGNED</span></div>
+    <div class="dr"><div class="dr-ico" style="background:var(--accent2)"></div><div class="dr-name">Huawei (Hardware)</div><span class="tag tag-log">PARTNER</span></div>
+    <div class="dr"><div class="dr-ico" style="background:var(--accent2)"></div><div class="dr-name">BYD (EV Supply)</div><span class="tag tag-log">PARTNER</span></div>
+
+    <div class="sec-label" style="margin-top:12px;">STATION HOSTS</div>
+    <div class="dr"><div class="dr-ico" style="background:var(--warn)"></div><div class="dr-name">Walmart Africa</div><span class="tag tag-min">HOST</span></div>
+    <div class="dr"><div class="dr-ico" style="background:var(--warn)"></div><div class="dr-name">Shell / BP / Engen</div><span class="tag tag-min">HOST</span></div>
+    <div class="dr"><div class="dr-ico" style="background:var(--warn)"></div><div class="dr-name">Sasol / Astron</div><span class="tag tag-min">HOST</span></div>
+
+    <div class="sec-label" style="margin-top:12px;">RELATED MARKETS</div>
+    <div class="market-pill" onclick="openMarket()"><div class="mp-title">Green T: 10 nodes active by June?</div><div class="mp-bottom"><span class="mp-prob">YES · 74%</span><span class="mp-vol">Vol R38K</span></div></div>
+  `;
+}
+
+function openMarket(){location.href='markets.html';}
+function toggleRP(){
+  document.getElementById('rp').classList.toggle('collapsed');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SWARM ENGINE
+// ═══════════════════════════════════════════════════════════════════════════
+const canvas=document.getElementById('swarm-canvas');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+const AGENT_TYPES={
+  BUYER:'rgba(0,184,255,',
+  PRODUCER:'rgba(251,191,36,',
+  ARBITRAGE:'rgba(167,139,250,',
+  LOGISTICS:'rgba(245,158,11,',
+};
+
+class Agent{
+  constructor(){
+    this.reset();
+    this.type=Object.keys(AGENT_TYPES)[Math.floor(Math.random()*4)];
+  }
+  reset(){
+    this.x=(0.35+Math.random()*0.30)*canvas.width;
+    this.y=(0.25+Math.random()*0.55)*canvas.height;
+    this.vx=(Math.random()-0.5)*1.2;
+    this.vy=(Math.random()-0.5)*1.2;
+    this.life=0;
+    this.maxLife=300+Math.random()*400;
+    this.tx=false;this.txT=0;
+  }
+  update(agents){
+    this.life++;
+    if(this.life>this.maxLife){this.reset();return;}
+    let sx=0,sy=0,ax=0,ay=0,cx=0,cy=0,n=0;
+    for(let a of agents){
+      if(a===this)continue;
+      const dx=this.x-a.x,dy=this.y-a.y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<18){sx+=dx/d;sy+=dy/d;}
+      if(d<60){ax+=a.vx;ay+=a.vy;cx+=a.x;cy+=a.y;n++;}
+      if(d<8&&!this.tx&&this.type!==a.type){this.tx=true;this.txT=40;swarmSignals++;}
+    }
+    if(n){ax/=n;ay/=n;cx=cx/n-this.x;cy=cy/n-this.y;}
+    const attX=0.5*canvas.width,attY=0.55*canvas.height;
+    const dx=attX-this.x,dy=attY-this.y,d=Math.sqrt(dx*dx+dy*dy)+1;
+    this.vx+=sx*0.12+ax*0.04+cx*0.003+(dx/d)*0.3;
+    this.vy+=sy*0.12+ay*0.04+cy*0.003+(dy/d)*0.3;
+    const spd=Math.sqrt(this.vx*this.vx+this.vy*this.vy);
+    if(spd>2.2){this.vx=this.vx/spd*2.2;this.vy=this.vy/spd*2.2;}
+    if(spd<0.3){this.vx+=(Math.random()-0.5)*0.3;this.vy+=(Math.random()-0.5)*0.3;}
+    this.x+=this.vx;this.y+=this.vy;
+    const mx=canvas.width,my=canvas.height;
+    if(this.x<0.2*mx){this.vx+=0.15;}if(this.x>0.75*mx){this.vx-=0.15;}
+    if(this.y<0.1*my){this.vy+=0.15;}if(this.y>0.88*my){this.vy-=0.15;}
+    if(this.tx){this.txT--;if(this.txT<=0)this.tx=false;}
+  }
+  draw(){
+    const t=AGENT_TYPES[this.type];
+    const alpha=this.tx?1.0:0.5+Math.sin(this.life*0.05)*0.1;
+    const r=this.tx?4:2.5;
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,r,0,Math.PI*2);
+    ctx.fillStyle=t+alpha+')';
+    ctx.fill();
+    if(this.tx){
+      ctx.beginPath();
+      ctx.arc(this.x,this.y,r*2.5,0,Math.PI*2);
+      ctx.strokeStyle=t+'0.4)';
+      ctx.lineWidth=1;
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(this.x,this.y);
+    ctx.lineTo(this.x-this.vx*4,this.y-this.vy*4);
+    ctx.strokeStyle=t+'0.2)';
+    ctx.lineWidth=0.8;
+    ctx.stroke();
+  }
+}
+
+const AGENTS=Array.from({length:200},()=>new Agent());
+
+function animateSwarm(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  AGENTS.forEach(a=>a.update(AGENTS));
+  AGENTS.forEach(a=>a.draw());
+  document.getElementById('sig-count').textContent=swarmSignals;
+  const sv=document.getElementById('swarm-val');
+  if(sv)sv.textContent=swarmSignals.toLocaleString();
+  if(swarmSignals>9999)swarmSignals=0;
+  requestAnimationFrame(animateSwarm);
+}
+animateSwarm();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════════════════════════════════
+function updateClock(){
+  const n=new Date();
+  document.getElementById('clk').textContent=
+    n.getUTCHours().toString().padStart(2,'0')+':'+
+    n.getUTCMinutes().toString().padStart(2,'0')+':'+
+    n.getUTCSeconds().toString().padStart(2,'0')+' UTC';
+}
+setInterval(updateClock,1000);updateClock();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BOTTOM TICKER
+// ═══════════════════════════════════════════════════════════════════════════
+const TICKS=[
+  {t:'COBALT DRC',v:'+2.1% SWARM CONVERGENCE',c:''},
+  {t:'GOLD',v:'$3,218/OZ · +0.8%',c:'g'},
+  {t:'VANILLA MG',v:'+5.2% SAVA HARVEST',c:'g'},
+  {t:'COLTAN',v:'+4.1% CHIP DEMAND',c:'p'},
+  {t:'SA PLATINUM',v:'BUSHVELD STABLE',c:''},
+  {t:'GREEN T',v:'20 NODES · DEAL SIGNED',c:''},
+  {t:'SUEZ',v:'+12% TRANSIT WOW',c:''},
+  {t:'LITHIUM MANONO',v:'DRC FEASIBILITY POSITIVE',c:''},
+  {t:'BYD',v:'EV TRUCK SUPPLY SECURED',c:''},
+  {t:'SWARM ENGINE',v:'200 AGENTS · DISCOVERY ACTIVE',c:'p'},
+  {t:'HUAWEI',v:'CHARGE ALLIANCE CONFIRMED',c:''},
+  {t:'COCOA CI',v:'+2.8% DRY SPELL AI FLAG',c:'g'},
+  {t:'GRAPHITE MZ',v:'BALAMA → TESLA OFFTAKE',c:''},
+  {t:'54 NATIONS',v:'LIVE ON LNCELOT ORACLE',c:''},
+  {t:'STABLECOINS',v:'GENIUS ACT RAILS · OCC 376P',c:'p'},
+];
+
+const tk=document.getElementById('ticker');
+[...TICKS,...TICKS].forEach(t=>{
+  tk.innerHTML+=`<div class="ti ${t.c}">${t.t} <b>${t.v}</b></div>`;
+});
+
+// Live ticker count update
+setInterval(()=>{
+  document.getElementById('ag-count').textContent=200+Math.round(Math.sin(Date.now()/8000)*5);
+},2000);
+
+// Window resize
+window.addEventListener('resize',()=>{
+  globe.width(GLOBE_WIDTH()).height(window.innerHeight);
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+});
+
+// Boot removal
+setTimeout(()=>{
+  const b=document.getElementById('boot');
+  if(b){b.style.display='none';b.remove();}
+},3400);
+
+// Initial panel render
+renderPanel();
+</script>
+</body>
+</html>
