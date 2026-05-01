@@ -698,6 +698,254 @@ html, body {
   .panel-right { grid-row: 3; border-left: none; border-top: 1px solid var(--line); }
   .timeline { grid-row: 4; }
 }
+/* ============ V2 CINEMATIC ADDITIONS ============ */
+
+/* tour mode button — top-right of map */
+.tour-controls {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 1000;
+}
+.tour-btn {
+  background: rgba(10, 14, 26, 0.92);
+  border: 1px solid var(--line-2);
+  color: var(--cyan);
+  padding: 8px 14px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: center;
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.tour-btn:hover { background: var(--cyan); color: var(--bg-0); }
+.tour-btn.active { background: var(--cyan); color: var(--bg-0); }
+.tour-btn .pulse-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: currentColor;
+  animation: pulse 1.5s infinite;
+}
+
+/* tour narration overlay — bottom center, above timeline */
+.tour-narration {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 14, 26, 0.95);
+  border: 1px solid var(--cyan);
+  border-radius: 6px;
+  padding: 14px 22px;
+  z-index: 2000;
+  max-width: 600px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--white);
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 30px rgba(93, 211, 255, 0.2);
+  display: none;
+  font-family: 'Inter', sans-serif;
+}
+.tour-narration.show { display: block; animation: narrationIn 0.4s ease; }
+.tour-narration .chapter {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--cyan);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+@keyframes narrationIn {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* recording mode — hides chrome */
+body.recording .panel-left,
+body.recording .panel-right,
+body.recording .timeline { display: none; }
+body.recording .app { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+body.recording .map-zone { grid-column: 1 / -1; grid-row: 1 / -1; }
+body.recording .live-card { top: 30px; }
+body.recording .chokepoint-switch { bottom: 30px; }
+body.recording .tour-controls { top: 30px; right: 30px; }
+
+/* clean mode — hides timeline event dots only */
+body.clean .tl-events { display: none; }
+
+/* vessel trail svg layer */
+.vessel-trail {
+  pointer-events: none;
+}
+
+/* enhanced vessel selection — spotlight other ships */
+body.has-selection .vessel-icon { opacity: 0.25; transition: opacity 0.3s; }
+body.has-selection .vessel-icon.selected { opacity: 1; filter: drop-shadow(0 0 6px var(--cyan)); }
+
+/* enhanced selected vessel dossier */
+.dossier-photo {
+  width: 100%;
+  height: 80px;
+  background: linear-gradient(135deg, var(--bg-3), var(--bg-2));
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.dossier-photo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 50%, rgba(93,211,255,0.08), transparent 40%),
+    radial-gradient(circle at 70% 60%, rgba(245,185,97,0.06), transparent 40%);
+}
+.dossier-photo .ship-silhouette {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
+  height: 14px;
+  background: rgba(232, 237, 245, 0.18);
+  border-radius: 1px;
+  border-top: 2px solid rgba(232, 237, 245, 0.4);
+}
+.dossier-photo .ship-silhouette::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 30%;
+  width: 12px;
+  height: 8px;
+  background: rgba(232, 237, 245, 0.3);
+}
+.dossier-photo .ship-silhouette::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  right: 25%;
+  width: 4px;
+  height: 12px;
+  background: rgba(232, 237, 245, 0.4);
+}
+.dossier-photo .water {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 18px;
+  background: linear-gradient(transparent, rgba(93, 211, 255, 0.1));
+}
+.dossier-photo .scan-line {
+  position: absolute;
+  bottom: 14px;
+  left: -20%;
+  right: -20%;
+  height: 1px;
+  background: var(--cyan);
+  opacity: 0.4;
+  animation: scan 2s linear infinite;
+}
+@keyframes scan {
+  0% { transform: translateX(-30%); opacity: 0; }
+  50% { opacity: 0.4; }
+  100% { transform: translateX(30%); opacity: 0; }
+}
+.dossier-photo .corner {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--cyan);
+  opacity: 0.8;
+}
+.dossier-photo .corner.tl { top: 4px; left: 4px; border-right: none; border-bottom: none; }
+.dossier-photo .corner.tr { top: 4px; right: 4px; border-left: none; border-bottom: none; }
+.dossier-photo .corner.bl { bottom: 4px; left: 4px; border-right: none; border-top: none; }
+.dossier-photo .corner.br { bottom: 4px; right: 4px; border-left: none; border-top: none; }
+
+.dossier-flag {
+  display: inline-block;
+  font-size: 14px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.selected-vessel .dossier-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cyan);
+  margin-bottom: 2px;
+  letter-spacing: 0.02em;
+  font-family: 'Inter', sans-serif;
+}
+.selected-vessel .dossier-sub {
+  font-size: 8px;
+  color: var(--mute);
+  letter-spacing: 0.12em;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* incident marker for satellite mode */
+.incident-marker {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 95, 109, 0.5), transparent 70%);
+  border: 1px solid var(--red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  animation: incidentPulse 2s infinite;
+}
+@keyframes incidentPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 95, 109, 0.4); }
+  50% { box-shadow: 0 0 0 12px rgba(255, 95, 109, 0); }
+}
+
+/* layer toggles styled buttons we added */
+.demo-pill {
+  background: rgba(10, 14, 26, 0.85);
+  border: 1px solid var(--line);
+  color: var(--mute-2);
+  padding: 5px 9px;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 3px;
+  backdrop-filter: blur(8px);
+}
+.demo-pill:hover { color: var(--cyan); border-color: var(--cyan); }
+.demo-pill.on { background: var(--cyan); color: var(--bg-0); border-color: var(--cyan); }
+
+/* connecting beam from selected vessel to right panel */
+.selection-beam {
+  position: absolute;
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* satellite map layer */
+.leaflet-container.satellite .leaflet-tile { filter: brightness(0.7) contrast(1.1) saturate(1.2); }
+
 </style>
 </head>
 <body>
@@ -829,6 +1077,22 @@ html, body {
     </div>
 
     <a href="globe" class="home-link">↗ Africa Oracle Globe</a>
+
+    <!-- TOUR / DEMO CONTROLS -->
+    <div class="tour-controls">
+      <button class="tour-btn" id="tour-toggle">
+        <span class="pulse-dot"></span>
+        🎬 PLAY TOUR
+      </button>
+      <button class="demo-pill" id="sat-toggle">🛰 SATELLITE</button>
+      <button class="demo-pill" id="recording-toggle">📹 CINEMATIC</button>
+    </div>
+
+    <!-- TOUR NARRATION OVERLAY -->
+    <div class="tour-narration" id="tour-narration">
+      <div class="chapter" id="tour-chapter">CHAPTER 1 OF 6</div>
+      <div id="tour-text">Welcome to LNCELOT Oracle.</div>
+    </div>
   </main>
 
   <!-- ============ RIGHT PANEL ============ -->
@@ -930,18 +1194,15 @@ html, body {
 'use strict';
 
 /* ============================================================
-   CHOKEPOINT CONFIG — change this object to spin up new scene
+   CHOKEPOINT CONFIG
    ============================================================ */
 const CHOKEPOINT = {
   slug: 'cape-of-good-hope',
   name: 'Cape of Good Hope',
-  // map center + bounds (Cape Town area, broadened to show Suez reroute traffic curve)
   center: [-34.5, 19.5],
   zoom: 6,
   bounds: [[-37.5, 14], [-31, 28]],
-  // virtual chokepoint line — vessels cross this to count
   chokeLine: { lat: -34.4, lonStart: 17.5, lonEnd: 21.0 },
-  // critical infrastructure markers
   infrastructure: [
     { name: 'Cape Town Port', type: 'port', lat: -33.91, lon: 18.43, throughput: '910K TEU/yr' },
     { name: 'Saldanha Bay', type: 'port', lat: -33.04, lon: 17.95, throughput: 'Iron ore + crude transhipment' },
@@ -951,29 +1212,36 @@ const CHOKEPOINT = {
     { name: 'Richards Bay', type: 'port', lat: -28.78, lon: 32.07, throughput: '91Mt coal export' },
     { name: 'Cape Sea cable landing', type: 'cable', lat: -34.05, lon: 18.36, capacity: 'EASSy + WACS + SAEx' },
   ],
-  // pipeline-equivalent for SA: SADC trade corridors (rail + road)
   pipelines: [
     { name: 'North-South corridor (Durban-DRC copper)', coords: [[-29.87, 31.04], [-25.75, 28.20], [-15.42, 28.28], [-11.66, 27.48]] },
     { name: 'Beira corridor (Zim-Moz)', coords: [[-19.83, 34.84], [-19.45, 32.65], [-17.83, 31.05]] },
     { name: 'TAZARA rail (Zambia-Tanzania)', coords: [[-12.97, 28.63], [-8.84, 33.45], [-6.79, 39.21]] },
   ],
-  // event timeline — these are the colored dots Bilawal had
   events: [
-    { date: '2023-11-19', label: 'Houthi attacks begin Red Sea', severity: 'red' },
-    { date: '2023-12-15', label: 'Maersk suspends Suez transit', severity: 'red' },
-    { date: '2024-01-12', label: 'US/UK strikes on Houthi sites', severity: 'red' },
-    { date: '2024-02-18', label: 'Belize-flagged Rubymar sunk', severity: 'red' },
-    { date: '2024-03-06', label: 'Mar shipping insurance up 200%', severity: 'amber' },
-    { date: '2024-04-22', label: 'Cape Town anchorage congestion peak', severity: 'amber' },
-    { date: '2024-06-30', label: 'TPT Durban port crisis', severity: 'amber' },
-    { date: '2024-09-10', label: 'Mozambique LNG security review', severity: 'amber' },
-    { date: '2024-11-08', label: 'Russian shadow fleet detected Cape', severity: 'red' },
-    { date: '2025-01-15', label: 'Houthi ceasefire announcement', severity: 'cyan' },
-    { date: '2025-03-22', label: 'First post-truce Maersk Suez transit', severity: 'cyan' },
-    { date: '2025-08-04', label: 'Cape reroute traffic still 2x baseline', severity: 'amber' },
-    { date: '2025-12-12', label: 'Cabo Delgado LNG restart timeline', severity: 'cyan' },
-    { date: '2026-02-19', label: 'Mozambique Channel attack reported', severity: 'red' },
-    { date: '2026-04-15', label: 'Insurance pricing normalization signal', severity: 'cyan' },
+    { date: '2023-11-19', label: 'Houthi attacks begin Red Sea', severity: 'red', lat: 12.6, lon: 43.4 },
+    { date: '2023-12-15', label: 'Maersk suspends Suez transit', severity: 'red', lat: 30.0, lon: 32.5 },
+    { date: '2024-01-12', label: 'US/UK strikes on Houthi sites', severity: 'red', lat: 15.3, lon: 44.2 },
+    { date: '2024-02-18', label: 'Belize-flagged Rubymar sunk', severity: 'red', lat: 13.4, lon: 42.6 },
+    { date: '2024-03-06', label: 'Mar shipping insurance up 200%', severity: 'amber', lat: -33.9, lon: 18.4 },
+    { date: '2024-04-22', label: 'Cape Town anchorage congestion peak', severity: 'amber', lat: -33.91, lon: 18.43 },
+    { date: '2024-06-30', label: 'TPT Durban port crisis', severity: 'amber', lat: -29.87, lon: 31.04 },
+    { date: '2024-09-10', label: 'Mozambique LNG security review', severity: 'amber', lat: -10.5, lon: 40.5 },
+    { date: '2024-11-08', label: 'Russian shadow fleet detected Cape', severity: 'red', lat: -34.2, lon: 18.6 },
+    { date: '2025-01-15', label: 'Houthi ceasefire announcement', severity: 'cyan', lat: 15.3, lon: 44.2 },
+    { date: '2025-03-22', label: 'First post-truce Maersk Suez transit', severity: 'cyan', lat: 30.0, lon: 32.5 },
+    { date: '2025-08-04', label: 'Cape reroute traffic still 2x baseline', severity: 'amber', lat: -34.5, lon: 19.5 },
+    { date: '2025-12-12', label: 'Cabo Delgado LNG restart timeline', severity: 'cyan', lat: -10.5, lon: 40.5 },
+    { date: '2026-02-19', label: 'Mozambique Channel attack reported', severity: 'red', lat: -19.0, lon: 41.5 },
+    { date: '2026-04-15', label: 'Insurance pricing normalization signal', severity: 'cyan', lat: -33.9, lon: 18.4 },
+  ],
+  // tour script — what plays when you hit PLAY TOUR
+  tour: [
+    { duration: 6000, focus: [-34.5, 19.5], zoom: 6, narration: 'This is the Cape of Good Hope. Twelve percent of global maritime trade flows around this point — and that number doubled overnight.' },
+    { duration: 6000, focus: [12.6, 43.4], zoom: 5, jumpTime: '2023-11-19', narration: 'November 2023. Houthi attacks begin in the Red Sea. Maersk, Hapag-Lloyd, every major carrier suspends Suez transit within a month.' },
+    { duration: 7000, focus: [-34.5, 19.5], zoom: 6, jumpTime: '2024-06-15', narration: 'Traffic surges around the Cape. Two-week longer voyages. Insurance up 200%. Cape Town anchorage at maximum capacity.' },
+    { duration: 6000, focus: [-33.91, 18.43], zoom: 9, narration: 'Cape Town port. Built for 910 thousand containers a year. Now handling double that — and we are tracking every vessel.' },
+    { duration: 7000, focus: [-29.87, 31.04], zoom: 8, narration: 'Durban. SADC gateway. 4.6 million containers a year flow through here, supplying mineral exports for the entire Southern African region.' },
+    { duration: 8000, focus: [-34.5, 19.5], zoom: 6, jumpTime: '2026-04-29', narration: 'Today, April 2026. The crisis is easing but the data fabric we built remains. Bloomberg costs thirty thousand dollars a year. LNCELOT is open source. Africa-native. Live.' },
   ],
 };
 
@@ -981,7 +1249,6 @@ const CHOKEPOINT = {
    STATE
    ============================================================ */
 const STATE = {
-  // simulated time runs from Nov 1 2023 to Apr 29 2026 (~910 days)
   timeStart: new Date('2023-11-01T00:00:00Z').getTime(),
   timeEnd: new Date('2026-04-29T00:00:00Z').getTime(),
   timeNow: new Date('2026-02-27T07:28:50Z').getTime(),
@@ -991,86 +1258,155 @@ const STATE = {
   filter: null,
   vessels: [],
   selectedVessel: null,
+  trails: new Map(), // mmsi -> [{lat,lon}, ...] up to 30 entries
+  trailsEnabled: true,
+  satellite: false,
+  recording: false,
+  tourPlaying: false,
+  tourStep: 0,
+  tourTimeout: null,
 };
 
 /* ============================================================
-   VESSEL GENERATOR — produces realistic AIS-style records
-   Swap to live AISStream.io WebSocket by replacing this fn
+   VESSEL GENERATOR — richer dossiers with operator + IMO + dimensions
    ============================================================ */
-const FLAGS = ['LR', 'PA', 'MH', 'SG', 'MT', 'GR', 'CY', 'IT', 'BS', 'HK', 'CN', 'IN', 'ZA', 'NG', 'KE', 'TZ', 'MZ', 'AO', 'NA'];
-const TYPES = ['Tanker', 'Bulk carrier', 'Container', 'LNG carrier', 'LPG tanker', 'General cargo', 'Vehicle carrier'];
-const SHIP_NAMES = ['Cape Pioneer', 'Atlantic Crown', 'Stella Voyager', 'Ocean Phoenix', 'Karoo Star', 'Indus Maru', 'Saldanha Trader', 'Bayou Princess', 'Olympic Glory', 'Maersk Letare', 'CMA CGM Bali', 'Cape Diamond', 'African Spirit', 'Sahara Wave', 'Kalahari Express', 'Limpopo Trader', 'Zambezi Star', 'Drakensberg', 'Table Mountain', 'Boulders Beach', 'Constantia', 'Stellenbosch', 'Hermanus Wave', 'Plettenberg', 'Robben', 'Hex River', 'Tsitsikamma'];
+const FLAGS = [
+  { code: 'LR', emoji: '🇱🇷', name: 'Liberia' },
+  { code: 'PA', emoji: '🇵🇦', name: 'Panama' },
+  { code: 'MH', emoji: '🇲🇭', name: 'Marshall Islands' },
+  { code: 'SG', emoji: '🇸🇬', name: 'Singapore' },
+  { code: 'MT', emoji: '🇲🇹', name: 'Malta' },
+  { code: 'GR', emoji: '🇬🇷', name: 'Greece' },
+  { code: 'CY', emoji: '🇨🇾', name: 'Cyprus' },
+  { code: 'IT', emoji: '🇮🇹', name: 'Italy' },
+  { code: 'BS', emoji: '🇧🇸', name: 'Bahamas' },
+  { code: 'HK', emoji: '🇭🇰', name: 'Hong Kong' },
+  { code: 'CN', emoji: '🇨🇳', name: 'China' },
+  { code: 'IN', emoji: '🇮🇳', name: 'India' },
+  { code: 'ZA', emoji: '🇿🇦', name: 'South Africa' },
+  { code: 'NG', emoji: '🇳🇬', name: 'Nigeria' },
+  { code: 'KE', emoji: '🇰🇪', name: 'Kenya' },
+  { code: 'TZ', emoji: '🇹🇿', name: 'Tanzania' },
+  { code: 'MZ', emoji: '🇲🇿', name: 'Mozambique' },
+  { code: 'AO', emoji: '🇦🇴', name: 'Angola' },
+  { code: 'NA', emoji: '🇳🇦', name: 'Namibia' },
+  { code: 'DK', emoji: '🇩🇰', name: 'Denmark' },
+  { code: 'FR', emoji: '🇫🇷', name: 'France' },
+  { code: 'NL', emoji: '🇳🇱', name: 'Netherlands' },
+  { code: 'DE', emoji: '🇩🇪', name: 'Germany' },
+];
+
+const TYPES = [
+  { name: 'Container', icon: '📦', minLength: 280, maxLength: 400 },
+  { name: 'Crude Oil Tanker', icon: '🛢', minLength: 250, maxLength: 380 },
+  { name: 'LNG Carrier', icon: '🔥', minLength: 280, maxLength: 345 },
+  { name: 'LPG Tanker', icon: '⛽', minLength: 220, maxLength: 290 },
+  { name: 'Bulk Carrier', icon: '⚒', minLength: 200, maxLength: 360 },
+  { name: 'Vehicle Carrier', icon: '🚗', minLength: 180, maxLength: 230 },
+  { name: 'General Cargo', icon: '📦', minLength: 100, maxLength: 200 },
+  { name: 'Chemical Tanker', icon: '⚗', minLength: 180, maxLength: 250 },
+];
+
+const OPERATORS = ['Maersk', 'MSC', 'CMA CGM', 'Hapag-Lloyd', 'Evergreen', 'COSCO', 'ONE', 'Yang Ming', 'HMM', 'ZIM', 'Frontline', 'Euronav', 'Teekay', 'NYK Line', 'Mitsui OSK', 'Fairmont', 'Stena', 'BW LPG', 'Pacific Basin', 'Star Bulk', 'Diana Shipping', 'Berge Bulk'];
+
+const SHIP_PREFIXES = ['Maersk', 'MSC', 'Ever', 'CMA CGM', 'COSCO', 'OOCL', 'ONE', 'Hapag', 'NYK', 'Frontline', 'Cape', 'Stella', 'Atlantic', 'Pacific', 'Indian Ocean', 'Star', 'Sea', 'Ocean', 'Royal', 'Olympic', 'Amazon', 'Africa', 'Asian', 'Fairmont', 'Stena', 'Berge'];
+const SHIP_SUFFIXES = ['Pioneer', 'Crown', 'Voyager', 'Phoenix', 'Star', 'Maru', 'Trader', 'Princess', 'Glory', 'Letare', 'Bali', 'Diamond', 'Spirit', 'Wave', 'Express', 'Pearl', 'Mariner', 'Endeavour', 'Horizon', 'Aurora', 'Madrid', 'Anna', 'Heloise', 'Caroline', 'Bonifacio', 'Triton', 'Atlas', 'Hercules'];
+
+const PORTS = ['Rotterdam', 'Hamburg', 'Antwerp', 'Singapore', 'Shanghai', 'Hong Kong', 'Mumbai', 'Dubai', 'Mombasa', 'Durban', 'Lagos', 'Tema', 'Dar es Salaam', 'Maputo', 'Walvis Bay', 'Tangier Med', 'Algeciras', 'Le Havre', 'Salalah', 'Colombo'];
+
+function randItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 function generateVessels(n) {
   const vessels = [];
   for (let i = 0; i < n; i++) {
     const inbound = Math.random() > 0.48;
-    // Vessels distributed along a curving Cape route — Atlantic side north, Indian side south-east
     const t = Math.random();
     let lat, lon, heading;
     if (Math.random() > 0.5) {
-      // Atlantic-side approach to Cape, curving around south
       lat = -34.5 - Math.random() * 2 + Math.sin(t * Math.PI) * 0.8;
       lon = 16.5 + t * 5 + (Math.random() - 0.5) * 0.6;
       heading = inbound ? 110 + (Math.random() - 0.5) * 30 : 290 + (Math.random() - 0.5) * 30;
     } else {
-      // Indian-side approach
       lat = -34.0 - Math.random() * 1.8 + Math.cos(t * Math.PI) * 0.6;
       lon = 21 + t * 6 + (Math.random() - 0.5) * 0.6;
       heading = inbound ? 250 + (Math.random() - 0.5) * 30 : 70 + (Math.random() - 0.5) * 30;
     }
-    const dark = Math.random() < 0.04; // 4% dark vessels
+    const dark = Math.random() < 0.04;
+    const type = randItem(TYPES);
+    const flag = randItem(FLAGS);
+    const length = Math.round(type.minLength + Math.random() * (type.maxLength - type.minLength));
+    const beam = Math.round(length * 0.16 + Math.random() * 4);
+    const dwt = Math.round(length * 280 + Math.random() * 20000);
+    const operator = randItem(OPERATORS);
+    const shipName = randItem(SHIP_PREFIXES) + ' ' + randItem(SHIP_SUFFIXES);
+    const built = 2002 + Math.floor(Math.random() * 23);
+    // generate port history
+    const portHistory = [];
+    for (let j = 0; j < 5; j++) {
+      portHistory.push({
+        port: randItem(PORTS),
+        date: new Date(Date.now() - (j + 1) * (Math.random() * 30 + 5) * 86400000).toISOString().slice(0, 10),
+        country: randItem(['NL', 'SG', 'AE', 'CN', 'IN', 'ZA', 'KE', 'NG']),
+      });
+    }
     vessels.push({
       mmsi: 200000000 + Math.floor(Math.random() * 700000000),
-      name: SHIP_NAMES[Math.floor(Math.random() * SHIP_NAMES.length)] + ' ' + Math.floor(Math.random() * 99),
-      flag: FLAGS[Math.floor(Math.random() * FLAGS.length)],
-      type: TYPES[Math.floor(Math.random() * TYPES.length)],
+      imo: 9000000 + Math.floor(Math.random() * 999999),
+      name: shipName.toUpperCase(),
+      operator,
+      flag,
+      type,
+      length,
+      beam,
+      dwt,
+      built,
       lat,
       lon,
       heading,
-      speed: 8 + Math.random() * 14, // knots
+      speed: 8 + Math.random() * 14,
       inbound,
       dark,
-      destination: inbound ? ['Durban', 'Richards Bay', 'Mombasa', 'Dar es Salaam', 'Maputo'][Math.floor(Math.random() * 5)] : ['Rotterdam', 'New York', 'Hamburg', 'Antwerp', 'Le Havre'][Math.floor(Math.random() * 5)],
+      cargo: type.name === 'Container' ? Math.round(8000 + Math.random() * 17000) + ' TEU' :
+             type.name.includes('Tanker') || type.name === 'LNG Carrier' ? (50 + Math.random() * 250).toFixed(0) + 'kt crude' :
+             type.name === 'Bulk Carrier' ? randItem(['Iron ore', 'Coal', 'Grain', 'Bauxite', 'Cobalt concentrate']) :
+             'Mixed cargo',
+      destination: inbound ? randItem(['Durban', 'Richards Bay', 'Mombasa', 'Dar es Salaam', 'Maputo', 'Walvis Bay']) : randItem(['Rotterdam', 'Hamburg', 'Antwerp', 'Le Havre', 'New York', 'Shanghai', 'Singapore']),
+      portHistory,
+      eta: Math.round(0.5 + Math.random() * 7) + 'd ' + Math.round(Math.random() * 23) + 'h',
     });
   }
   return vessels;
 }
 
 /* ============================================================
-   MAP — Leaflet with dark CartoDB tiles inverted
+   MAP — Leaflet with dark base + satellite toggle
    ============================================================ */
-const map = L.map('map', {
-  zoomControl: false,
-  attributionControl: true,
-  preferCanvas: true,
-}).setView(CHOKEPOINT.center, CHOKEPOINT.zoom);
+const map = L.map('map', { zoomControl: false, attributionControl: true, preferCanvas: true })
+  .setView(CHOKEPOINT.center, CHOKEPOINT.zoom);
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; OSM &copy; CARTO · LNCELOT Oracle',
-  maxZoom: 12,
-  minZoom: 4,
+const darkTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OSM &copy; CARTO · LNCELOT Oracle', maxZoom: 12, minZoom: 4,
 }).addTo(map);
+
+const satelliteTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: '&copy; Esri WorldImagery', maxZoom: 18, minZoom: 4,
+});
 
 const layerGroups = {
   vessels: L.layerGroup().addTo(map),
+  trails: L.layerGroup().addTo(map),
   pipelines: L.layerGroup().addTo(map),
   infra: L.layerGroup().addTo(map),
   events: L.layerGroup().addTo(map),
+  incidents: L.layerGroup().addTo(map),
   chokeLine: L.layerGroup().addTo(map),
 };
 
-// chokepoint reference line (the virtual line vessels cross)
+// chokepoint reference line
 function drawChokeLine() {
   layerGroups.chokeLine.clearLayers();
-  L.polyline([
-    [CHOKEPOINT.chokeLine.lat, CHOKEPOINT.chokeLine.lonStart],
-    [CHOKEPOINT.chokeLine.lat, CHOKEPOINT.chokeLine.lonEnd],
-  ], {
-    color: '#5dd3ff',
-    weight: 1,
-    dashArray: '6 4',
-    opacity: 0.5,
+  L.polyline([[CHOKEPOINT.chokeLine.lat, CHOKEPOINT.chokeLine.lonStart], [CHOKEPOINT.chokeLine.lat, CHOKEPOINT.chokeLine.lonEnd]], {
+    color: '#5dd3ff', weight: 1, dashArray: '6 4', opacity: 0.5,
   }).addTo(layerGroups.chokeLine);
 }
 drawChokeLine();
@@ -1079,12 +1415,9 @@ function drawPipelines() {
   layerGroups.pipelines.clearLayers();
   if (!STATE.layers.pipelines) return;
   CHOKEPOINT.pipelines.forEach(p => {
-    L.polyline(p.coords, {
-      color: '#f5b961',
-      weight: 1.4,
-      dashArray: '4 3',
-      opacity: 0.7,
-    }).bindTooltip(p.name, { className: 'lncelot-tooltip', direction: 'top' }).addTo(layerGroups.pipelines);
+    L.polyline(p.coords, { color: '#f5b961', weight: 1.4, dashArray: '4 3', opacity: 0.7 })
+      .bindTooltip(p.name, { className: 'lncelot-tooltip', direction: 'top' })
+      .addTo(layerGroups.pipelines);
   });
 }
 drawPipelines();
@@ -1103,25 +1436,55 @@ function drawInfra() {
 }
 drawInfra();
 
-/* ---- vessel rendering ---- */
-function vesselIcon(v) {
-  const color = v.dark ? 'var(--vessel-dark)' : v.inbound ? 'var(--vessel-in)' : 'var(--vessel-out)';
+/* ---- VESSEL TRAILS ---- */
+function updateTrails() {
+  STATE.vessels.forEach(v => {
+    if (!STATE.trails.has(v.mmsi)) STATE.trails.set(v.mmsi, []);
+    const trail = STATE.trails.get(v.mmsi);
+    trail.push([v.lat, v.lon]);
+    if (trail.length > 25) trail.shift();
+  });
+}
+
+function renderTrails() {
+  layerGroups.trails.clearLayers();
+  if (!STATE.trailsEnabled || !STATE.layers.trips) return;
+  STATE.vessels.forEach(v => {
+    const trail = STATE.trails.get(v.mmsi);
+    if (!trail || trail.length < 2) return;
+    if (STATE.filter && !v.type.name.toLowerCase().includes(STATE.filter)) return;
+    const color = v.dark ? '#ff5f6d' : v.inbound ? '#5dd3ff' : '#f5b961';
+    // segments with fading opacity
+    for (let i = 1; i < trail.length; i++) {
+      const opacity = (i / trail.length) * 0.5;
+      L.polyline([trail[i-1], trail[i]], {
+        color, weight: 0.7, opacity, interactive: false,
+      }).addTo(layerGroups.trails);
+    }
+  });
+}
+
+/* ---- VESSEL RENDERING ---- */
+function vesselIcon(v, isSelected) {
   const fill = v.dark ? '#ff5f6d' : v.inbound ? '#e8edf5' : '#f5b961';
-  // arrow svg pointing in heading direction
+  const stroke = isSelected ? '#5dd3ff' : 'rgba(0,0,0,0.4)';
+  const strokeW = isSelected ? '1.2' : '0.3';
+  const size = isSelected ? 14 : 10;
   return L.divIcon({
-    html: `<svg class="vessel-icon" width="10" height="10" viewBox="0 0 10 10" style="transform: rotate(${v.heading}deg); display:block;">
-      <polygon points="5,1 9,9 5,7 1,9" fill="${fill}" stroke="rgba(0,0,0,0.4)" stroke-width="0.3"/>
+    html: `<svg class="vessel-icon ${isSelected ? 'selected' : ''}" data-mmsi="${v.mmsi}" width="${size}" height="${size}" viewBox="0 0 10 10" style="transform: rotate(${v.heading}deg); display:block;">
+      <polygon points="5,1 9,9 5,7 1,9" fill="${fill}" stroke="${stroke}" stroke-width="${strokeW}"/>
     </svg>`,
-    className: '', iconSize: [10, 10], iconAnchor: [5, 5],
+    className: '', iconSize: [size, size], iconAnchor: [size/2, size/2],
   });
 }
 
 function renderVessels() {
   layerGroups.vessels.clearLayers();
   if (!STATE.layers.trips && !STATE.layers.heads) return;
-  STATE.vessels.forEach((v, idx) => {
-    if (STATE.filter && !v.type.toLowerCase().includes(STATE.filter)) return;
-    const m = L.marker([v.lat, v.lon], { icon: vesselIcon(v) });
+  STATE.vessels.forEach((v) => {
+    if (STATE.filter && !v.type.name.toLowerCase().includes(STATE.filter)) return;
+    const isSelected = STATE.selectedVessel && STATE.selectedVessel.mmsi === v.mmsi;
+    const m = L.marker([v.lat, v.lon], { icon: vesselIcon(v, isSelected) });
     m.on('click', () => selectVessel(v));
     m.addTo(layerGroups.vessels);
   });
@@ -1129,25 +1492,57 @@ function renderVessels() {
 
 function selectVessel(v) {
   STATE.selectedVessel = v;
+  document.body.classList.add('has-selection');
+  renderVessels();
+  renderDossier(v);
+  // smooth fly to the vessel
+  map.flyTo([v.lat, v.lon], Math.max(map.getZoom(), 8), { duration: 1.4 });
+}
+
+function deselectVessel() {
+  STATE.selectedVessel = null;
+  document.body.classList.remove('has-selection');
+  renderVessels();
+  document.getElementById('selected-vessel').classList.add('empty');
+  document.getElementById('selected-vessel').innerHTML = 'None';
+}
+
+function renderDossier(v) {
   const el = document.getElementById('selected-vessel');
   el.classList.remove('empty');
   el.innerHTML = `
-    <div class="name">${v.name}</div>
+    <div class="dossier-photo">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <div class="ship-silhouette"></div>
+      <div class="water"></div>
+      <div class="scan-line"></div>
+    </div>
+    <div class="dossier-name">${v.name}</div>
+    <div class="dossier-sub">${v.type.icon} ${v.type.name.toUpperCase()} · ${v.built}</div>
+    <div class="row"><span class="k">FLAG</span><span class="v"><span class="dossier-flag">${v.flag.emoji}</span>${v.flag.name}</span></div>
+    <div class="row"><span class="k">OPERATOR</span><span class="v">${v.operator}</span></div>
     <div class="row"><span class="k">MMSI</span><span class="v">${v.mmsi}</span></div>
-    <div class="row"><span class="k">FLAG</span><span class="v">${v.flag}</span></div>
-    <div class="row"><span class="k">TYPE</span><span class="v">${v.type}</span></div>
+    <div class="row"><span class="k">IMO</span><span class="v">${v.imo}</span></div>
+    <div class="row"><span class="k">LOA</span><span class="v">${v.length}m × ${v.beam}m</span></div>
+    <div class="row"><span class="k">DWT</span><span class="v">${v.dwt.toLocaleString()}t</span></div>
+    <div class="row"><span class="k">CARGO</span><span class="v">${v.cargo}</span></div>
     <div class="row"><span class="k">SPEED</span><span class="v">${v.speed.toFixed(1)} kn</span></div>
     <div class="row"><span class="k">HEADING</span><span class="v">${Math.round(v.heading)}°</span></div>
     <div class="row"><span class="k">DEST</span><span class="v">${v.destination}</span></div>
-    <div class="row"><span class="k">STATUS</span><span class="v" style="color:${v.dark ? 'var(--red)' : 'var(--green)'}">${v.dark ? 'DARK / AIS GAP' : 'AIS ACTIVE'}</span></div>
+    <div class="row"><span class="k">ETA</span><span class="v">${v.eta}</span></div>
+    <div class="row"><span class="k">STATUS</span><span class="v" style="color:${v.dark ? 'var(--red)' : 'var(--green)'}">${v.dark ? '⚠ DARK / AIS GAP' : '● AIS ACTIVE'}</span></div>
+    <div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--line);">
+      <div style="font-size:8px;color:var(--mute);letter-spacing:0.12em;margin-bottom:4px;">PORT HISTORY</div>
+      ${v.portHistory.slice(0, 4).map(p => `<div class="row" style="font-size:8px"><span class="k">${p.date}</span><span class="v">${p.port}</span></div>`).join('')}
+    </div>
   `;
 }
 
 /* ============================================================
-   SPARKLINES — event chart + brent + timeline
+   SPARKLINES
    ============================================================ */
 function generateEventCurve() {
-  // simulate Cape traffic — flat until Nov 23, then surge
   const days = Math.floor((STATE.timeEnd - STATE.timeStart) / (24 * 3600 * 1000));
   const inSeries = [], outSeries = [];
   const surgeStart = (new Date('2023-11-19').getTime() - STATE.timeStart) / (24 * 3600 * 1000);
@@ -1156,11 +1551,8 @@ function generateEventCurve() {
     if (d > surgeStart) {
       const surge = Math.min(35, (d - surgeStart) * 0.3);
       base += surge;
-      // recovery dip after Jan 2025
       const recoveryStart = (new Date('2025-01-15').getTime() - STATE.timeStart) / (24 * 3600 * 1000);
-      if (d > recoveryStart) {
-        base -= Math.min(15, (d - recoveryStart) * 0.04);
-      }
+      if (d > recoveryStart) base -= Math.min(15, (d - recoveryStart) * 0.04);
     }
     base += (Math.random() - 0.5) * 4;
     inSeries.push(Math.max(8, base * 0.48));
@@ -1168,7 +1560,6 @@ function generateEventCurve() {
   }
   return { inSeries, outSeries };
 }
-
 const curves = generateEventCurve();
 
 function pathFromSeries(series, w, h) {
@@ -1187,12 +1578,8 @@ function renderSparklines() {
   document.getElementById('spark-out').setAttribute('d', pathFromSeries(curves.outSeries, 240, 60));
   document.getElementById('tl-spark-cyan').setAttribute('d', pathFromSeries(curves.inSeries, 1000, 22));
   document.getElementById('tl-spark-amber').setAttribute('d', pathFromSeries(curves.outSeries, 1000, 22));
-
-  // brent — fake oil curve from Feb 25 to Apr 29
   const brentSeries = [];
-  for (let i = 0; i < 60; i++) {
-    brentSeries.push(72 + Math.sin(i / 8) * 4 + Math.cos(i / 5) * 2 + (Math.random() - 0.5) * 1.5);
-  }
+  for (let i = 0; i < 60; i++) brentSeries.push(72 + Math.sin(i / 8) * 4 + Math.cos(i / 5) * 2 + (Math.random() - 0.5) * 1.5);
   document.getElementById('brent-line').setAttribute('d', pathFromSeries(brentSeries, 240, 50));
 }
 renderSparklines();
@@ -1211,10 +1598,7 @@ function renderTimelineEvents() {
     dot.className = 'tl-event-dot ' + e.severity;
     dot.style.left = pct + '%';
     dot.title = e.date + ' — ' + e.label;
-    dot.addEventListener('click', () => {
-      STATE.timeNow = t;
-      updateTime();
-    });
+    dot.addEventListener('click', () => { STATE.timeNow = t; updateTime(); });
     container.appendChild(dot);
   });
 }
@@ -1228,21 +1612,14 @@ function updateTime() {
   const pct = ((STATE.timeNow - STATE.timeStart) / span) * 100;
   document.getElementById('tl-cursor').style.left = pct + '%';
   document.getElementById('tl-input').value = pct * 10;
-
   const d = new Date(STATE.timeNow);
-  const iso = d.toISOString().replace('T', ' ').replace('Z', 'Z');
-  document.getElementById('tl-time-iso').textContent = iso;
-
+  document.getElementById('tl-time-iso').textContent = d.toISOString().replace('T', ' ').replace('Z', 'Z');
   const day = d.toUTCString().slice(5, 16).toUpperCase();
   document.getElementById('live-date').textContent = day;
   document.getElementById('oil-date').textContent = day;
-
-  // update spark cursor
   const sparkX = (pct / 100) * 240;
   document.getElementById('spark-cursor').setAttribute('x1', sparkX);
   document.getElementById('spark-cursor').setAttribute('x2', sparkX);
-
-  // recompute live stats based on time position — interpolate from curves
   const dayIdx = Math.min(curves.inSeries.length - 1, Math.floor((STATE.timeNow - STATE.timeStart) / (24 * 3600 * 1000)));
   const inN = Math.round(curves.inSeries[dayIdx]);
   const outN = Math.round(curves.outSeries[dayIdx]);
@@ -1258,22 +1635,21 @@ function play() {
   STATE.playing = true;
   document.getElementById('play-toggle').textContent = 'PAUSE';
   playInterval = setInterval(() => {
-    STATE.timeNow += STATE.speed * 3600 * 1000; // hours per tick
-    if (STATE.timeNow >= STATE.timeEnd) {
-      STATE.timeNow = STATE.timeStart;
-    }
-    // jitter vessels for animation
+    STATE.timeNow += STATE.speed * 3600 * 1000;
+    if (STATE.timeNow >= STATE.timeEnd) STATE.timeNow = STATE.timeStart;
     STATE.vessels.forEach(v => {
       const dlat = Math.cos(v.heading * Math.PI / 180) * v.speed * 0.0001 * STATE.speed * (v.inbound ? -1 : 1);
       const dlon = Math.sin(v.heading * Math.PI / 180) * v.speed * 0.0001 * STATE.speed * (v.inbound ? 1 : -1);
       v.lat += dlat;
       v.lon += dlon;
-      // wrap
       if (v.lon > 28 || v.lon < 14 || v.lat > -29 || v.lat < -38) {
         v.lat = -34.5 + (Math.random() - 0.5) * 4;
         v.lon = 17 + Math.random() * 9;
+        STATE.trails.delete(v.mmsi);
       }
     });
+    updateTrails();
+    renderTrails();
     renderVessels();
     updateTime();
   }, 200);
@@ -1285,9 +1661,7 @@ function pause() {
   document.getElementById('play-toggle').textContent = 'PLAY';
 }
 
-document.getElementById('play-toggle').addEventListener('click', () => {
-  STATE.playing ? pause() : play();
-});
+document.getElementById('play-toggle').addEventListener('click', () => STATE.playing ? pause() : play());
 
 document.querySelectorAll('.tl-speed [data-speed]').forEach(b => {
   b.addEventListener('click', () => {
@@ -1313,27 +1687,25 @@ document.querySelectorAll('[data-layer]').forEach(b => {
     b.classList.toggle('on', STATE.layers[layer]);
     if (layer === 'pipelines') drawPipelines();
     if (layer === 'infra') drawInfra();
-    if (layer === 'trips' || layer === 'heads' || layer === 'dark') renderVessels();
+    if (layer === 'trips' || layer === 'heads' || layer === 'dark') { renderVessels(); renderTrails(); }
     if (layer === 'dark') {
       document.getElementById('live-foot').textContent = 'DARK TRANSIT: LAYER ' + (STATE.layers.dark ? 'ON' : 'OFF');
     }
-    const enabled = Object.values(STATE.layers).filter(Boolean).length;
-    document.getElementById('layer-count').textContent = enabled + ' ENABLED';
+    document.getElementById('layer-count').textContent = Object.values(STATE.layers).filter(Boolean).length + ' ENABLED';
   });
 });
 
 document.querySelectorAll('[data-filter]').forEach(b => {
   b.addEventListener('click', () => {
     const f = b.dataset.filter;
-    if (STATE.filter === f) {
-      STATE.filter = null;
-      b.classList.remove('on');
-    } else {
+    if (STATE.filter === f) { STATE.filter = null; b.classList.remove('on'); }
+    else {
       document.querySelectorAll('[data-filter]').forEach(x => x.classList.remove('on'));
       STATE.filter = f === 'tankers' ? 'tanker' : f === 'bulk' ? 'bulk' : f === 'container' ? 'container' : 'lng';
       b.classList.add('on');
     }
     renderVessels();
+    renderTrails();
   });
 });
 
@@ -1349,7 +1721,6 @@ document.querySelectorAll('[data-preset]').forEach(b => {
   });
 });
 
-/* tabs */
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
@@ -1357,19 +1728,122 @@ document.querySelectorAll('.tab').forEach(t => {
   });
 });
 
-/* zoom buttons */
 document.getElementById('zoom-in').addEventListener('click', () => map.zoomIn());
 document.getElementById('zoom-out').addEventListener('click', () => map.zoomOut());
-document.getElementById('reset-view').addEventListener('click', () => map.setView(CHOKEPOINT.center, CHOKEPOINT.zoom));
+document.getElementById('reset-view').addEventListener('click', () => {
+  map.flyTo(CHOKEPOINT.center, CHOKEPOINT.zoom, { duration: 1.4 });
+  deselectVessel();
+});
+
+/* ============================================================
+   SATELLITE TOGGLE
+   ============================================================ */
+document.getElementById('sat-toggle').addEventListener('click', () => {
+  STATE.satellite = !STATE.satellite;
+  document.getElementById('sat-toggle').classList.toggle('on', STATE.satellite);
+  if (STATE.satellite) {
+    map.removeLayer(darkTiles);
+    satelliteTiles.addTo(map);
+    document.querySelector('.leaflet-container').classList.add('satellite');
+    renderIncidents();
+  } else {
+    map.removeLayer(satelliteTiles);
+    darkTiles.addTo(map);
+    document.querySelector('.leaflet-container').classList.remove('satellite');
+    layerGroups.incidents.clearLayers();
+  }
+});
+
+function renderIncidents() {
+  layerGroups.incidents.clearLayers();
+  CHOKEPOINT.events.filter(e => e.severity === 'red').forEach(e => {
+    const icon = L.divIcon({
+      html: `<div class="incident-marker">⚠</div>`,
+      className: '', iconSize: [28, 28], iconAnchor: [14, 14],
+    });
+    L.marker([e.lat, e.lon], { icon }).bindTooltip(`<strong>${e.date}</strong><br>${e.label}`, { direction: 'top' }).addTo(layerGroups.incidents);
+  });
+}
+
+/* ============================================================
+   CINEMATIC MODE — hides chrome for clean recording
+   ============================================================ */
+document.getElementById('recording-toggle').addEventListener('click', () => {
+  STATE.recording = !STATE.recording;
+  document.body.classList.toggle('recording', STATE.recording);
+  document.getElementById('recording-toggle').classList.toggle('on', STATE.recording);
+  setTimeout(() => map.invalidateSize(), 350);
+});
+
+/* ============================================================
+   TOUR MODE — auto-narrated demo sequence
+   ============================================================ */
+function playTour() {
+  STATE.tourPlaying = true;
+  STATE.tourStep = 0;
+  document.getElementById('tour-toggle').classList.add('active');
+  document.getElementById('tour-toggle').innerHTML = '<span class="pulse-dot"></span>⏸ STOP TOUR';
+  pause(); // pause vessel playback during tour
+  runTourStep();
+}
+
+function runTourStep() {
+  if (!STATE.tourPlaying || STATE.tourStep >= CHOKEPOINT.tour.length) {
+    stopTour();
+    return;
+  }
+  const step = CHOKEPOINT.tour[STATE.tourStep];
+  // jump time if step requests
+  if (step.jumpTime) {
+    STATE.timeNow = new Date(step.jumpTime).getTime();
+    updateTime();
+  }
+  // fly camera
+  map.flyTo(step.focus, step.zoom, { duration: 1.8 });
+  // show narration
+  const narr = document.getElementById('tour-narration');
+  document.getElementById('tour-chapter').textContent = `CHAPTER ${STATE.tourStep + 1} OF ${CHOKEPOINT.tour.length}`;
+  document.getElementById('tour-text').textContent = step.narration;
+  narr.classList.add('show');
+  STATE.tourStep++;
+  STATE.tourTimeout = setTimeout(runTourStep, step.duration);
+}
+
+function stopTour() {
+  STATE.tourPlaying = false;
+  if (STATE.tourTimeout) clearTimeout(STATE.tourTimeout);
+  document.getElementById('tour-narration').classList.remove('show');
+  document.getElementById('tour-toggle').classList.remove('active');
+  document.getElementById('tour-toggle').innerHTML = '<span class="pulse-dot"></span>🎬 PLAY TOUR';
+  play(); // resume normal playback
+}
+
+document.getElementById('tour-toggle').addEventListener('click', () => {
+  STATE.tourPlaying ? stopTour() : playTour();
+});
+
+/* allow ESC to deselect */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (STATE.tourPlaying) stopTour();
+    else if (STATE.selectedVessel) {
+      deselectVessel();
+      map.flyTo(CHOKEPOINT.center, CHOKEPOINT.zoom, { duration: 1.0 });
+    }
+  }
+  if (e.key === 'r') document.getElementById('recording-toggle').click();
+  if (e.key === 't') document.getElementById('tour-toggle').click();
+});
 
 /* ============================================================
    BOOT
    ============================================================ */
 STATE.vessels = generateVessels(380);
+// seed initial trails
+for (let i = 0; i < 10; i++) updateTrails();
+renderTrails();
 renderVessels();
-
-// auto-start in playing state for the demo
-setTimeout(() => play(), 800);
+setTimeout(() => play(), 600);
 </script>
 </body>
 </html>
